@@ -26,6 +26,19 @@ dependencies {
     runtimeOnly 'mysql:mysql-connector-java'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.2'
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation group: 'org.json', name: 'json', version: '20160810'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2
+    implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.0.RELEASE'
+// https://mvnrepository.com/artifact/org.springframework.security/spring-security-oauth2-client
+    implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.4.5'
+
+
+
+
+
 }
 
 test {
