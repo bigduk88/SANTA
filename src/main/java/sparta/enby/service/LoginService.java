@@ -1,7 +1,6 @@
 package sparta.enby.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,7 +11,6 @@ import sparta.enby.model.Account;
 import sparta.enby.model.UserRole;
 import sparta.enby.repository.AccountRepository;
 import sparta.enby.security.UserDetailsImpl;
-import sparta.enby.security.kakao.KakaoOAuth2;
 import sparta.enby.security.kakao.KakaoUserInfo;
 
 

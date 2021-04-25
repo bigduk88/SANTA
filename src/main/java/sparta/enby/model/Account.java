@@ -21,10 +21,10 @@ public class Account extends BaseTimeEntity{
     private Long id;
 
     @Column(nullable = false)
-    private String password;
+    private String nickname;
 
     @Column(nullable = false)
-    private String nickname;
+    private String password;
 
     @Column(nullable = false)
     private String email;
@@ -35,14 +35,12 @@ public class Account extends BaseTimeEntity{
     @Column(nullable = true)
     private Long kakaoId;
 
-
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRole role;
 
-
     public Account(String nickname, String password, String email, String profile_img, UserRole role, Long kakaoId){
-        this.nickname=nickname;
+        this.nickname = nickname;
         this.password = password;
         this.email = email;
         this.profile_img =profile_img;

@@ -14,7 +14,6 @@ public class LoginController {
     @GetMapping("/login/oauth2/code/kakao")
     public String kakaoLogin(String code){
         loginService.kakaoLogin(code);
-
-        return "redirect: /";
+        return "redirect:/";
     }
 }
