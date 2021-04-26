@@ -1,10 +1,14 @@
 package sparta.enby.security.kakao;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -23,12 +27,12 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Getter
+@Setter
 public class KakaoOAuth2UserService extends DefaultOAuth2UserService {
     private final HttpSession httpSession;
     private final AccountRepository accountRepository;
-    private final BCryptPasswordEncoder encodePassword;
 
-    @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException{
         OAuth2User oAuth2User = super.loadUser(userRequest);
@@ -37,14 +41,29 @@ public class KakaoOAuth2UserService extends DefaultOAuth2UserService {
         Long kakaoId = body.getLong("id");
         String email = body.getJSONObject("kakao_account").getString("email");
         String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
-        password = encodePassword.encode(password);
         String nickname = body.getJSONObject("properties").getString("nickname");
         String profile_img = body.getJSONObject("properties").getString("profile_image");
         UserRole role = UserRole.USER;
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         httpSession.setAttribute("login_info", attributes);
 
-        Account account = new Account(nickname, password, email, profile_img, role, kakaoId);
-        accountRepository.save(account);
+        Account account = accountRepository.findByKakaoId(kakaoId).orElse(null);
+
+        System.out.println(kakaoId);
+        System.out.println(nickname);
+        System.out.println(email);
+        System.out.println(profile_img);
+
+        if (account == null){
+            accountRepository.save(Account.builder()
+                    .kakaoId(kakaoId)
+                    .email(email)
+                    .nickname(nickname)
+                    .password(passwordEncoder.encode(password))
+                    .role(role).profile_img(profile_img).build());
+        }
+
         return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes, "id");
     }
 }
