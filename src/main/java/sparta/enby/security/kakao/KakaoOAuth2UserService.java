@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +44,7 @@ public class KakaoOAuth2UserService extends DefaultOAuth2UserService {
         String profile_img = body.getJSONObject("properties").getString("profile_image");
         UserRole role = UserRole.USER;
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        System.out.println(attributes);
 
         httpSession.setAttribute("login_info", attributes);
 

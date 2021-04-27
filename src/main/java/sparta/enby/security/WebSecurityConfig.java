@@ -51,11 +51,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception{
+        http.httpBasic().disable().headers().frameOptions().disable().and().csrf().disable();
         http.cors().configurationSource(corsConfigurationSource());
         http.oauth2Login().userInfoEndpoint().userService(kakaoOAuth2UserService);
         http.authorizeRequests()
                 .antMatchers("/login/**").permitAll()
-                .anyRequest().authenticated().and().formLogin().disable();
+                .anyRequest().permitAll().and().formLogin().disable();
 
     }
 }

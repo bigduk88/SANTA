@@ -4,13 +4,17 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import sparta.enby.dto.BoardRequestDto;
 import sparta.enby.dto.BoardResponseDto;
 import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.service.BoardService;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,9 +22,37 @@ public class BoardController {
 
     private final BoardService boardService;
 
+
+    //모임 게시판
     @GetMapping("/board/mating")
     public Page<BoardResponseDto> getBoard(@RequestParam("page") int page, @RequestParam("size") int size, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return boardService.getBoard(page, size, userDetails);
 
+    }
+
+    //게시판 상세 페이지
+    @GetMapping("/board/mating/{board_id}")
+    public ResponseEntity getDetailBoard(@PathVariable Long board_id){
+        return boardService.getDetailBoard(board_id);
+
+    }
+
+    //게시글 적기
+    @PostMapping("/board/mating")
+//    public ResponseEntity<String> writeBoard(@ModelAttribute BoardRequestDto boardRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
+    public ResponseEntity<String> writeBoard(@ModelAttribute BoardRequestDto boardRequestDto) throws IOException {
+//        System.out.println(userDetails.getAccount());
+        return boardService.writeBoard(boardRequestDto);
+    }
+
+    //게시글 수정
+    @PutMapping("/board/mating/{board_id}")
+    public ResponseEntity editBoard(@PathVariable Long board_id, @ModelAttribute BoardRequestDto boardRequestDto)throws IOException{
+        return boardService.editBoard(board_id, boardRequestDto);
+    }
+
+    @DeleteMapping("/board/mating/{board_id}")
+    public ResponseEntity deleteBoard(@PathVariable Long board_id){
+        return boardService.deleteBoard(board_id);
     }
 }
