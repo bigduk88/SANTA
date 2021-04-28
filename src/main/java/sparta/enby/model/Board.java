@@ -1,13 +1,9 @@
 package sparta.enby.model;
 
 import lombok.*;
-import org.checkerframework.checker.units.qual.C;
 import sparta.enby.dto.BoardRequestDto;
-
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -23,28 +19,20 @@ public class Board extends BaseEntity {
     @Column(name = "board_id")
     private Long id;
 
-    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
     private String contents;
 
-    @Column(nullable = false)
     private String meetDate;
 
-    @Column(nullable = false)
     private String meetTime;
 
-    @Column(nullable = false)
     private String location;
 
-    @Column(nullable = false)
     private Float longitude;
 
-    @Column(nullable = false)
     private Float latitude;
 
-    @Column(nullable = false)
     private String board_imgUrl;
 
     @ManyToOne

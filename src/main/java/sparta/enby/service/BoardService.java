@@ -69,12 +69,7 @@ public class BoardService {
                 board.getId(),
                 board.getContents(),
                 board.getTitle(),
-                board.getReviews().stream().map(
-                        review -> new ReviewResponseDto(
-                                review.getReview_imgUrl(),
-                                review.getContents()
-                        )
-                ).collect(Collectors.toList())
+                board.getLocation()
         ));
         return toMap;
     }

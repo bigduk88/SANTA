@@ -30,6 +30,10 @@ public class BoardResponseDto {
         this.reviews = reviews;
     }
 
-    public BoardResponseDto(Long id, String contents, String title, List<ReviewResponseDto> collect) {
+    public BoardResponseDto(Long id, String contents, String title, String location) {
+        this.id = id;
+        this.contents = contents;
+        this.title = title;
+        this.location = location;
     }
 }
