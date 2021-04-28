@@ -43,6 +43,11 @@ public class Board extends BaseEntity {
     @Builder.Default
     List<Review> reviews = new ArrayList<>();
 
+    @OneToMany(mappedBy = "board")
+    @Builder.Default
+    List<Registration> attendList = new ArrayList<>();
+
+
     public void addAccount(Account account) {
         this.account = account;
     }

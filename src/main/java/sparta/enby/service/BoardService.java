@@ -9,25 +9,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import sparta.enby.dto.BoardRequestDto;
 import sparta.enby.dto.BoardResponseDto;
+import sparta.enby.dto.RegistrationResponseDto;
 import sparta.enby.dto.ReviewResponseDto;
 import sparta.enby.model.Board;
 import sparta.enby.repository.BoardRepository;
 import sparta.enby.security.UserDetailsImpl;
-import sparta.enby.uploader.Uploader;
+import sparta.enby.uploader.FileUploaderService;
+import sparta.enby.uploader.S3Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
-    private final Uploader uploader;
+    private final S3Service uploader;
+    private final FileUploaderService fileUploaderService;
 
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id) {
@@ -48,7 +50,14 @@ public class BoardService {
                                         review.getReview_imgUrl(),
                                         review.getContents()
                                 )
-                        ).collect(Collectors.toList())))
+                        ).collect(Collectors.toList()),
+                        board.getAttendList().stream().map(
+                                registration -> new RegistrationResponseDto(
+                                        registration.isRegister(),
+                                        registration.getComment()
+                                )
+                        ).collect(Collectors.toList())
+                ))
                 .collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
         map.put("boards", toList);
@@ -81,7 +90,7 @@ public class BoardService {
         if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
             return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
         }
-        String board_imgUrl = uploader.upload(boardRequestDto.getBoardImg(), "static");
+        String board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
 
         Board board = Board.builder()
                 .title(boardRequestDto.getTitle())

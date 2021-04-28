@@ -9,7 +9,8 @@ import sparta.enby.model.Board;
 import sparta.enby.model.Review;
 import sparta.enby.repository.BoardRepository;
 import sparta.enby.repository.ReviewRepository;
-import sparta.enby.uploader.Uploader;
+import sparta.enby.uploader.FileUploaderService;
+import sparta.enby.uploader.S3Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -19,12 +20,13 @@ import java.io.IOException;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final Uploader uploader;
+    private final S3Service uploader;
     private final BoardRepository boardRepository;
+    private final FileUploaderService fileUploaderService;
 
     @Transactional
     public ResponseEntity<String> writeReview(Long board_id, ReviewRequestDto reviewRequestDto) throws IOException {
-        String review_imgUrl = uploader.upload(reviewRequestDto.getReviewImg(), "static");
+        String review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
         Board board = boardRepository.findById(board_id).orElse(null);
 
         if (board == null){

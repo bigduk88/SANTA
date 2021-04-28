@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@ToString(of = {"id, review_img, contents"})
+@ToString(of = {"id", "review_imgUrl", "contents"})
 
 public class Review extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
