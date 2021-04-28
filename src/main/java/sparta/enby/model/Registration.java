@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(of = {"id", "register", "comment"})
+@ToString(of = {"id", "register", "contents"})
 public class Registration extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +19,7 @@ public class Registration extends BaseEntity {
 
     private boolean register;
 
-    private String comment;
+    private String contents;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")

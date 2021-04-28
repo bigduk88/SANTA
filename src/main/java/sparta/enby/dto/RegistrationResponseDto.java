@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class RegistrationResponseDto {
     private boolean register;
-    private String comment;
+    private String contents;
 
-    public RegistrationResponseDto(boolean register, String comment){
+    public RegistrationResponseDto(boolean register, String contents){
         this.register = register;
-        this.comment = comment;
+        this.contents = contents;
     }
 }

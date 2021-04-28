@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import sparta.enby.uploader.S3Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +45,6 @@ public class BoardService {
                         board.getContents(),
                         board.getMeetTime(),
                         board.getLocation(),
-                        board.getLatitude(),
-                        board.getLongitude(),
                         board.getBoard_imgUrl(),
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(
@@ -54,7 +55,7 @@ public class BoardService {
                         board.getAttendList().stream().map(
                                 registration -> new RegistrationResponseDto(
                                         registration.isRegister(),
-                                        registration.getComment()
+                                        registration.getContents()
                                 )
                         ).collect(Collectors.toList())
                 ))
@@ -78,7 +79,8 @@ public class BoardService {
                 board.getId(),
                 board.getContents(),
                 board.getTitle(),
-                board.getLocation()
+                board.getLocation(),
+                board.getMeetTime()
         ));
         return toMap;
     }
@@ -91,15 +93,14 @@ public class BoardService {
             return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
         }
         String board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
+        String time = boardRequestDto.getMeetTime();
+        LocalDateTime meeting_time = LocalDateTime.parse(time, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         Board board = Board.builder()
                 .title(boardRequestDto.getTitle())
-                .meetDate(boardRequestDto.getMeetDate())
-                .meetTime(boardRequestDto.getMeetTime())
+                .meetTime(meeting_time)
                 .location(boardRequestDto.getLocation())
                 .contents(boardRequestDto.getContents())
-                .latitude(boardRequestDto.getLatitude())
-                .longitude(boardRequestDto.getLongitude())
                 .board_imgUrl(board_imgUrl).build();
         Board newBoard = boardRepository.save(board);
 //        newBoard.addAccount(account);

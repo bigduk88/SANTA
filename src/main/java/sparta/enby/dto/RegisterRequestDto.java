@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RegisterRequestDto {
-    private String comment;
+    private String contents;
     private boolean register;
 }

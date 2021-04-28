@@ -25,10 +25,12 @@ public class RegistrationService {
         if (board == null){
             return new ResponseEntity<>("없는 게시글입니다", HttpStatus.BAD_REQUEST);
         }
+        System.out.println(registerRequestDto.isRegister());
+        System.out.println(registerRequestDto.getContents());
 
         Registration registration = Registration.builder()
                 .register(registerRequestDto.isRegister())
-                .comment(registerRequestDto.getComment()).build();
+                .contents(registerRequestDto.getContents()).build();
         registrationRepository.save(registration);
         registration.addBoard(board);
         return new ResponseEntity<>("성공적으로 신청하였습니다", HttpStatus.OK);

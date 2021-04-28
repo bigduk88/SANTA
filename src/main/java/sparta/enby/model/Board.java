@@ -1,8 +1,10 @@
 package sparta.enby.model;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import sparta.enby.dto.BoardRequestDto;
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,15 +25,10 @@ public class Board extends BaseEntity {
 
     private String contents;
 
-    private String meetDate;
-
-    private String meetTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime meetTime;
 
     private String location;
-
-    private Float longitude;
-
-    private Float latitude;
 
     private String board_imgUrl;
 
@@ -56,8 +53,6 @@ public class Board extends BaseEntity {
         this.board_imgUrl = board_imgUrl;
         this.title = title;
         this.contents = contents;
-        this.latitude = latitude;
-        this.longitude = longitude;
         this.meetTime = meetTime;
         this.location = location;
     }
