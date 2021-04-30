@@ -32,7 +32,8 @@ public class OAuth2Kakao {
     private final AccountRepository accountRepository;
 
     private final String KakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
-    private final String frontendRedirectUrl = "http://localhost:8080";
+        private final String frontendRedirectUrl = "http://3.36.67.251:8080";
+//    private final String frontendRedirectUrl = "http://localhost:8080";
 
     public AuthorizationKakao callTokenApi(String code) {
         String grantType = "authorization_code";

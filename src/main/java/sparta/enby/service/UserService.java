@@ -15,9 +15,12 @@ public class UserService {
     private final OAuth2Kakao oAuth2Kakao;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public ResponseEntity<String> oauth2AuthorizationKakao(String token){
-//        AuthorizationKakao authorization = oAuth2Kakao.callTokenApi(code);
-        Account account = oAuth2Kakao.callGetUserByAcessToken(token);
+    public ResponseEntity<String> oauth2AuthorizationKakao(String code){
+        AuthorizationKakao authorization = oAuth2Kakao.callTokenApi(code);
+        Account account = oAuth2Kakao.callGetUserByAcessToken(authorization.getAccess_token());
+        System.out.println(account);
+        System.out.println(account.getNickname());
+        System.out.println(account.getProfile_img());
         return ResponseEntity.ok().body(jwtTokenProvider.createToken(account.getNickname(), account.getProfile_img(), account.getRoles()));
     }
 }

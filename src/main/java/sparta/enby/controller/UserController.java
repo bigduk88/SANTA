@@ -13,8 +13,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/callback/kakao")
-    public ResponseEntity<String> oauth2AuthorizationKakao(@RequestParam("token") String token){
-        return userService.oauth2AuthorizationKakao(token);
+    public ResponseEntity<String> oauth2AuthorizationKakao(@RequestParam("code") String code){
+        return userService.oauth2AuthorizationKakao(code);
 
     }
 }
