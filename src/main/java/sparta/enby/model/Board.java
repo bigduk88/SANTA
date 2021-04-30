@@ -49,7 +49,7 @@ public class Board extends BaseEntity {
         this.account = account;
     }
 
-    public void update(BoardRequestDto boardRequestDto, Long board_id){
+    public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location, Long board_id){
         this.board_imgUrl = board_imgUrl;
         this.title = title;
         this.contents = contents;

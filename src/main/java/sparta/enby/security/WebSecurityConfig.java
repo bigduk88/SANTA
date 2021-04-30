@@ -14,8 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import sparta.enby.security.kakao.KakaoOAuth2UserService;
-
+import sparta.enby.security.kakao.OAuth2Kakao;
 
 
 @RequiredArgsConstructor
@@ -23,7 +22,7 @@ import sparta.enby.security.kakao.KakaoOAuth2UserService;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    private final KakaoOAuth2UserService kakaoOAuth2UserService;
+    private final OAuth2Kakao oAuth2Kakao;
 
     @Bean
     @Override
@@ -53,10 +52,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception{
         http.httpBasic().disable().headers().frameOptions().disable().and().csrf().disable();
         http.cors().configurationSource(corsConfigurationSource());
-        http.oauth2Login().userInfoEndpoint().userService(kakaoOAuth2UserService);
         http.authorizeRequests()
-                .antMatchers("/login/**").permitAll()
-                .anyRequest().permitAll().and().formLogin().disable();
-
+                .antMatchers("/callback/**").permitAll()
+                .antMatchers("/oauth2/**").permitAll()
+                .anyRequest().permitAll();
     }
 }

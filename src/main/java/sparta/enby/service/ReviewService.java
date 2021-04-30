@@ -1,10 +1,12 @@
 package sparta.enby.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import sparta.enby.dto.ReviewRequestDto;
+import sparta.enby.dto.ReviewResponseDto;
 import sparta.enby.model.Board;
 import sparta.enby.model.Review;
 import sparta.enby.repository.BoardRepository;
@@ -14,6 +16,8 @@ import sparta.enby.uploader.S3Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,22 @@ public class ReviewService {
     private final BoardRepository boardRepository;
     private final FileUploaderService fileUploaderService;
 
+
+    public ResponseEntity getReviewList(){
+        List<Review> reviews = reviewRepository.findAll(Sort.by(Sort.Direction.DESC,"createdAt"));
+        List<ReviewResponseDto> toList = reviews.stream().map(
+                review -> new ReviewResponseDto(
+                        review.getId(),
+                        review.getReview_imgUrl(),
+                        review.getContents(),
+                        review.getBoard().getId()
+                )
+        ).collect(Collectors.toList());
+        return ResponseEntity.ok().body(toList);
+    }
+
+
+    //게시글 작성
     @Transactional
     public ResponseEntity<String> writeReview(Long board_id, ReviewRequestDto reviewRequestDto) throws IOException {
         String review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());

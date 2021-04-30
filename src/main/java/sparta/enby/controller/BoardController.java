@@ -1,9 +1,7 @@
 package sparta.enby.controller;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +11,17 @@ import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.service.BoardService;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
+
+    @GetMapping("/main/board")
+    public ResponseEntity getBoardList(){
+        return boardService.getBoardList();
+    }
 
 
     //모임 게시판
@@ -51,6 +52,7 @@ public class BoardController {
         return boardService.editBoard(board_id, boardRequestDto);
     }
 
+    //게시글 삭제
     @DeleteMapping("/board/mating/{board_id}")
     public ResponseEntity deleteBoard(@PathVariable Long board_id){
         return boardService.deleteBoard(board_id);
