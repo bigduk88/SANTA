@@ -2,6 +2,8 @@ package sparta.enby.model;
 
 import lombok.*;
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -32,8 +34,8 @@ public class Account extends BaseTimeEntity{
     @Column(nullable = true)
     private Long kakaoId;
 
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    private UserRole role;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Builder.Default
+    private List<String> roles = new ArrayList<>();
 
 }

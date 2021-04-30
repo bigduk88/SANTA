@@ -26,13 +26,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        UserRole userRole = account.getRole();
-
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(ROLE_PREFIX + userRole.toString());
-        Collection<GrantedAuthority>authorities = new ArrayList<>();
-        authorities.add(authority);
-
-        return authorities;
+        return account.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
     @Override

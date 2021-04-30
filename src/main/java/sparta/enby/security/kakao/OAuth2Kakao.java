@@ -22,6 +22,7 @@ import sparta.enby.model.UserRole;
 import sparta.enby.repository.AccountRepository;
 
 import javax.transaction.Transactional;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +60,7 @@ public class OAuth2Kakao {
     }
 
     @Transactional
-    public String callGetUserByAcessToken(String accessToken) {
+    public Account callGetUserByAcessToken(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -72,7 +73,6 @@ public class OAuth2Kakao {
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
             JsonNode kakao_account = root.path("kakao_account");
-            System.out.println(kakao_account);
             String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
             Account account = accountRepository.findByKakaoId(root.get("id").asLong()).orElse(null);
             if (account == null) {
@@ -82,10 +82,10 @@ public class OAuth2Kakao {
                         .email(kakao_account.get("email").asText())
                         .nickname(kakao_account.path("profile").path("nickname").asText())
                         .profile_img(kakao_account.path("profile").path("profile_image_url").asText())
-                        .role(UserRole.USER)
+                        .roles(Collections.singletonList("ROLE_USER"))
                         .build());
             }
-            return response.getBody();
+            return account;
         } catch (RestClientException | JsonProcessingException ex) {
             ex.printStackTrace();
             throw new IllegalArgumentException("Failed");

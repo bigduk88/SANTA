@@ -25,8 +25,6 @@ public class RegistrationService {
         if (board == null){
             return new ResponseEntity<>("없는 게시글입니다", HttpStatus.BAD_REQUEST);
         }
-        System.out.println(registerRequestDto.isRegister());
-        System.out.println(registerRequestDto.getContents());
 
         Registration registration = Registration.builder()
                 .register(registerRequestDto.isRegister())

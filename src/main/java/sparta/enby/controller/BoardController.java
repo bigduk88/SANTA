@@ -27,6 +27,7 @@ public class BoardController {
     //모임 게시판
     @GetMapping("/board/mating")
     public Page<BoardResponseDto> getBoard(@RequestParam("page") int page, @RequestParam("size") int size, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        System.out.println(userDetails.getAccount().getNickname());
         return boardService.getBoard(page, size, userDetails);
 
     }
