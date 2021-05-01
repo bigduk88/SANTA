@@ -11,6 +11,7 @@ import sparta.enby.model.Board;
 import sparta.enby.model.Review;
 import sparta.enby.repository.BoardRepository;
 import sparta.enby.repository.ReviewRepository;
+import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.uploader.FileUploaderService;
 import sparta.enby.uploader.S3Service;
 
@@ -45,7 +46,7 @@ public class ReviewService {
 
     //게시글 작성
     @Transactional
-    public ResponseEntity<String> writeReview(Long board_id, ReviewRequestDto reviewRequestDto) throws IOException {
+    public ResponseEntity<String> writeReview(Long board_id, ReviewRequestDto reviewRequestDto, UserDetailsImpl userDetails) throws IOException {
         String review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
         Board board = boardRepository.findById(board_id).orElse(null);
 
@@ -56,6 +57,7 @@ public class ReviewService {
         Review review = Review.builder()
                 .contents(reviewRequestDto.getContents())
                 .review_imgUrl(review_imgUrl)
+                .account(userDetails.getAccount())
                 .build();
         Review newReview = reviewRepository.save(review);
         newReview.addBoard(board);

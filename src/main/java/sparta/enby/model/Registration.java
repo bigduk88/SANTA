@@ -17,9 +17,13 @@ public class Registration extends BaseEntity {
     @Column(name = "regisitration_id")
     private Long id;
 
-    private boolean register;
+    private boolean accepted;
 
     private String contents;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")

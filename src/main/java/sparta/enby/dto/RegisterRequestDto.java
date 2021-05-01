@@ -7,5 +7,4 @@ import lombok.Setter;
 @Setter
 public class RegisterRequestDto {
     private String contents;
-    private boolean register;
 }

@@ -2,9 +2,11 @@ package sparta.enby.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.enby.dto.ReviewRequestDto;
 import sparta.enby.model.Review;
+import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.service.ReviewService;
 
 import java.io.IOException;
@@ -21,7 +23,7 @@ public class ReviewController {
 
     //review 작성
     @PostMapping("/board/mating/{board_id}/review")
-    public ResponseEntity<String> writeReview(@PathVariable Long board_id, @ModelAttribute ReviewRequestDto reviewRequestDto) throws IOException {
-        return reviewService.writeReview(board_id, reviewRequestDto);
+    public ResponseEntity<String> writeReview(@PathVariable Long board_id, @ModelAttribute ReviewRequestDto reviewRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
+        return reviewService.writeReview(board_id, reviewRequestDto, userDetails);
     }
 }

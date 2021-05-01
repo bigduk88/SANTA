@@ -1,11 +1,9 @@
 package sparta.enby.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.SpringApplication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,15 +11,18 @@ import sparta.enby.dto.BoardRequestDto;
 import sparta.enby.dto.BoardResponseDto;
 import sparta.enby.dto.RegistrationResponseDto;
 import sparta.enby.dto.ReviewResponseDto;
+import sparta.enby.model.Account;
 import sparta.enby.model.Board;
+import sparta.enby.repository.AccountRepository;
 import sparta.enby.repository.BoardRepository;
+import sparta.enby.repository.RegistrationRepository;
+import sparta.enby.repository.ReviewRepository;
 import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.uploader.FileUploaderService;
 import sparta.enby.uploader.S3Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -35,6 +36,9 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final S3Service uploader;
     private final FileUploaderService fileUploaderService;
+    private AccountRepository accountRepository;
+    private ReviewRepository reviewRepository;
+    private RegistrationRepository registrationRepository;
 
 
     public ResponseEntity getBoardList() {
@@ -53,7 +57,7 @@ public class BoardService {
 
 
     //게시글 상세 페이지
-    public ResponseEntity getDetailBoard(Long board_id) {
+    public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
 
         List<Board> boards = boardRepository.findAllById(board_id);
         List<BoardResponseDto> toList = boards.stream().map(
@@ -66,14 +70,19 @@ public class BoardService {
                         board.getBoard_imgUrl(),
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(
+                                        review.getId(),
                                         review.getReview_imgUrl(),
-                                        review.getContents()
+                                        review.getContents(),
+                                        review.getBoard().getId()
                                 )
                         ).collect(Collectors.toList()),
                         board.getAttendList().stream().map(
                                 registration -> new RegistrationResponseDto(
-                                        registration.isRegister(),
-                                        registration.getContents()
+                                        registration.isAccepted(),
+                                        registration.getContents(),
+                                        registration.getAccount().getNickname(),
+                                        registration.getAccount().getProfile_img(),
+                                        registration.getAccount().getKakaoId()
                                 )
                         ).collect(Collectors.toList())
                 ))
@@ -105,7 +114,7 @@ public class BoardService {
 
     // 게시글 쓰기
     @Transactional
-    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto) throws IOException {
+    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) throws IOException {
 //    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, Account account) throws IOException {
         if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
             return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
@@ -133,7 +142,7 @@ public class BoardService {
                 .contents(boardRequestDto.getContents())
                 .board_imgUrl(board_imgUrl).build();
         Board newBoard = boardRepository.save(board);
-//        newBoard.addAccount(account);
+        newBoard.addAccount(userDetails.getAccount());
 
         return new ResponseEntity<>("성공적으로 저장 완료하였습니다", HttpStatus.OK);
     }
@@ -141,7 +150,15 @@ public class BoardService {
 
     //게시글 수정
     @Transactional
-    public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto) {
+    public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
+        Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId()).orElse(null);
+        if (account == null){
+            return new ResponseEntity<>("없는 사용자입니다.",HttpStatus.BAD_REQUEST);
+        }
+        if (account!=userDetails.getAccount()){
+            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다",HttpStatus.BAD_REQUEST);
+        }
+
         Board board = boardRepository.findById(board_id).orElse(null);
 
         if (board == null) {
@@ -185,7 +202,7 @@ public class BoardService {
                 location = boardRequestDto.getLocation();
             }
 
-            board.update(board_imgUrl, title, contents, time, location, board_id);
+            board.update(board_imgUrl, title, contents, time, location);
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
         }
     }
@@ -193,12 +210,18 @@ public class BoardService {
 
     //게시글 삭제
     @Transactional
-    public ResponseEntity<String> deleteBoard(Long board_id) {
+    public ResponseEntity<String> deleteBoard(Long board_id, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
+        Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId()).orElse(null);
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         }
+        if (account == null || account!=userDetails.getAccount()) {
+            return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다",HttpStatus.BAD_REQUEST);
+        }
         boardRepository.deleteById(board_id);
+        reviewRepository.deleteAllByBoard(board);
+        registrationRepository.deleteAllByBoard(board);
         return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
     }
 }
