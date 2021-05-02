@@ -7,12 +7,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import sparta.enby.dto.BoardRequestDto;
-import sparta.enby.dto.BoardResponseDto;
-import sparta.enby.dto.RegistrationResponseDto;
-import sparta.enby.dto.ReviewResponseDto;
+import sparta.enby.dto.*;
 import sparta.enby.model.Account;
 import sparta.enby.model.Board;
+import sparta.enby.model.Review;
 import sparta.enby.repository.AccountRepository;
 import sparta.enby.repository.BoardRepository;
 import sparta.enby.repository.RegistrationRepository;
@@ -60,9 +58,10 @@ public class BoardService {
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
 
         List<Board> boards = boardRepository.findAllById(board_id);
-        List<BoardResponseDto> toList = boards.stream().map(
-                board -> new BoardResponseDto(
+        List<BoardDetailResponseDto> toList = boards.stream().map(
+                board -> new BoardDetailResponseDto(
                         board.getId(),
+                        board.getCreatedBy(),
                         board.getTitle(),
                         board.getContents(),
                         board.getMeetTime(),
@@ -99,7 +98,7 @@ public class BoardService {
         if (page > boards.getTotalPages()) {
             return null;
         }
-        if (boards.equals(null) || boards.isEmpty()) {
+        if (boards.isEmpty()) {
             return null;
         }
         Page<BoardResponseDto> toMap = boards.map(board -> new BoardResponseDto(
@@ -151,7 +150,7 @@ public class BoardService {
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
-        Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId()).orElse(null);
+        Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId());
         if (account == null){
             return new ResponseEntity<>("없는 사용자입니다.",HttpStatus.BAD_REQUEST);
         }
@@ -210,18 +209,24 @@ public class BoardService {
 
     //게시글 삭제
     @Transactional
-    public ResponseEntity<String> deleteBoard(Long board_id, UserDetailsImpl userDetails) {
+    public ResponseEntity<String> deleteBoard(Long board_id, Account account) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId()).orElse(null);
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         }
-        if (account == null || account!=userDetails.getAccount()) {
+        if (!board.getAccount().equals(account)) {
             return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다",HttpStatus.BAD_REQUEST);
         }
-        boardRepository.deleteById(board_id);
+        List<Review>reviews = reviewRepository.findAllByBoard(board);
+        for (Review review : reviews){
+            fileUploaderService.removeImage(review.getReview_imgUrl());
+        }
         reviewRepository.deleteAllByBoard(board);
+        System.out.println("review deleted");
         registrationRepository.deleteAllByBoard(board);
+        System.out.println("register deleted");
+        boardRepository.deleteById(board_id);
+        System.out.println("board deleted");
         return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
     }
 }

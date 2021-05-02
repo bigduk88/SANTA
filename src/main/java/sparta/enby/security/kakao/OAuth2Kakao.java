@@ -76,7 +76,7 @@ public class OAuth2Kakao {
             JsonNode root = objectMapper.readTree(response.getBody());
             JsonNode kakao_account = root.path("kakao_account");
             String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
-            Account account = accountRepository.findByKakaoId(root.get("id").asLong()).orElse(null);
+            Account account = accountRepository.findByKakaoId(root.get("id").asLong());
             if (account == null) {
                 accountRepository.save(Account.builder()
                         .kakaoId(root.get("id").asLong())

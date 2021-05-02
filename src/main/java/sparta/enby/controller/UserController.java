@@ -17,6 +17,9 @@ public class UserController {
 
     @RequestMapping("/callback/kakao")
     public ResponseEntity oauth2AuthroziationKakao(@RequestParam("code") String code){
+        if (code == null || code.isEmpty()){
+            return ResponseEntity.badRequest().body("인가코드가 없습니다.");
+        }
         return ResponseEntity.ok().body(userService.oauth2AuthorizationKakao(code));
     }
 }
