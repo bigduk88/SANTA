@@ -2,6 +2,8 @@ package sparta.enby.model;
 
 import lombok.*;
 import org.checkerframework.checker.units.qual.C;
+import sparta.enby.dto.RegisterRequestDto;
+import sparta.enby.dto.ReviewRequestDto;
 
 import javax.persistence.*;
 
@@ -44,5 +46,9 @@ public class Review extends BaseEntity{
         account.getReviews().remove(this);
         this.board = null;
         this.account = null;
+    }
+    public void editReview(String contents, String review_imgUrl){
+        this.contents = contents;
+        this.review_imgUrl = review_imgUrl;
     }
 }

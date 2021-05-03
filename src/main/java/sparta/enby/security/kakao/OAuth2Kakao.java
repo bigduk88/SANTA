@@ -32,9 +32,8 @@ public class OAuth2Kakao {
     private final AccountRepository accountRepository;
 
     private final String KakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
-    //    private final String frontendRedirectUrl = "http://localhost:3000";
-    private final String frontendRedirectUrl = "http://localhost:8080";
-
+    private final String frontendRedirectUrl = "http://localhost:3000";
+//    private final String frontendRedirectUrl = "http://localhost:8080";
 
     public AuthorizationKakao callTokenApi(String code) {
         String grantType = "authorization_code";
@@ -45,8 +44,8 @@ public class OAuth2Kakao {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", grantType);
         params.add("client_id", KakaoOauth2ClientId);
-//        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
-        params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
+        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
+//        params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
         params.add("code", code);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
@@ -76,7 +75,7 @@ public class OAuth2Kakao {
             JsonNode root = objectMapper.readTree(response.getBody());
             JsonNode kakao_account = root.path("kakao_account");
             String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
-            if (accountRepository.existsByKakaoId(root.get("id").asLong())){
+            if (accountRepository.existsByKakaoId(root.get("id").asLong())) {
                 return accountRepository.findByKakaoId(root.get("id").asLong());
             }
             Account account = accountRepository.save(Account.builder()

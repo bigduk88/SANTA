@@ -1,6 +1,7 @@
 package sparta.enby.model;
 
 import lombok.*;
+import sparta.enby.dto.RegisterRequestDto;
 
 import javax.persistence.*;
 
@@ -10,7 +11,7 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(of = {"id", "register", "contents"})
+@ToString(of = {"id", "accepted", "contents"})
 public class Registration extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +35,8 @@ public class Registration extends BaseEntity {
         this.account = account;
         board.getRegistrations().add(this);
         account.getRegistrations().add(this);
-
+    }
+    public void update(RegisterRequestDto registerRequestDto){
+        this.accepted = registerRequestDto.isAccepted();
     }
 }
