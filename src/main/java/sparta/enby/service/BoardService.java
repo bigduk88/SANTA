@@ -75,7 +75,7 @@ public class BoardService {
                                         review.getBoard().getId()
                                 )
                         ).collect(Collectors.toList()),
-                        board.getAttendList().stream().map(
+                        board.getRegistrations().stream().map(
                                 registration -> new RegistrationResponseDto(
                                         registration.isAccepted(),
                                         registration.getContents(),
@@ -142,7 +142,6 @@ public class BoardService {
                 .board_imgUrl(board_imgUrl).build();
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
-
         return new ResponseEntity<>("성공적으로 저장 완료하였습니다", HttpStatus.OK);
     }
 
@@ -151,11 +150,11 @@ public class BoardService {
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
         Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId());
-        if (account == null){
-            return new ResponseEntity<>("없는 사용자입니다.",HttpStatus.BAD_REQUEST);
+        if (account == null) {
+            return new ResponseEntity<>("없는 사용자입니다.", HttpStatus.BAD_REQUEST);
         }
-        if (account!=userDetails.getAccount()){
-            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다",HttpStatus.BAD_REQUEST);
+        if (account != userDetails.getAccount()) {
+            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
         }
 
         Board board = boardRepository.findById(board_id).orElse(null);
@@ -166,8 +165,7 @@ public class BoardService {
             String board_imgUrl = null;
             if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
                 board_imgUrl = board.getBoard_imgUrl();
-            }
-            else {
+            } else {
                 fileUploaderService.removeImage(board.getBoard_imgUrl());
                 board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
             }
@@ -214,19 +212,22 @@ public class BoardService {
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         }
-        if (!board.getAccount().equals(account)) {
-            return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다",HttpStatus.BAD_REQUEST);
+        if (!board.getAccount().getNickname().equals(account.getNickname())) {
+            return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다", HttpStatus.BAD_REQUEST);
         }
-        List<Review>reviews = reviewRepository.findAllByBoard(board);
-        for (Review review : reviews){
-            fileUploaderService.removeImage(review.getReview_imgUrl());
+        if (board.getReviews() != null && board.getRegistrations() != null){
+            List<Review>reviews = board.getReviews();
+            for (Review review : reviews) {
+                fileUploaderService.removeImage(review.getReview_imgUrl());
+                reviewRepository.deleteAllByBoard(board);
+                System.out.println("review deleted");
+                registrationRepository.deleteAllByBoard(board);
+                System.out.println("register deleted");
+            }
         }
-        reviewRepository.deleteAllByBoard(board);
-        System.out.println("review deleted");
-        registrationRepository.deleteAllByBoard(board);
-        System.out.println("register deleted");
+        board.deleteBoard(board);
         boardRepository.deleteById(board_id);
         System.out.println("board deleted");
-        return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
-    }
+        return new ResponseEntity<>("성공적으로 삭제 하였습니다",HttpStatus.OK);
+}
 }

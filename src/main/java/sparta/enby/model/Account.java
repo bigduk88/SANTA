@@ -38,4 +38,16 @@ public class Account extends BaseTimeEntity{
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
+    @OneToMany(mappedBy = "account")
+    @Builder.Default
+    List<Board>boards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "account")
+    @Builder.Default
+    List<Review>reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "account")
+    @Builder.Default
+    List<Registration>registrations = new ArrayList<>();
+
 }

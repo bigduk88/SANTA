@@ -29,9 +29,11 @@ public class Registration extends BaseEntity {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    public void addBoard(Board board){
+    public void addBoardAndAccount(Board board, Account account){
         this.board = board;
-        board.getAttendList().add(this);
+        this.account = account;
+        board.getRegistrations().add(this);
+        account.getRegistrations().add(this);
 
     }
 }

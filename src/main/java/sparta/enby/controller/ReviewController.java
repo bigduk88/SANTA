@@ -24,6 +24,11 @@ public class ReviewController {
     //review 작성
     @PostMapping("/board/mating/{board_id}/review")
     public ResponseEntity<String> writeReview(@PathVariable Long board_id, @ModelAttribute ReviewRequestDto reviewRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
-        return reviewService.writeReview(board_id, reviewRequestDto, userDetails);
+        return reviewService.writeReview(board_id, reviewRequestDto, userDetails.getAccount());
+    }
+
+    @DeleteMapping("/board/review/{review_id}")
+    public ResponseEntity<String> deleteReview(@PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return reviewService.deleteReview(review_id,userDetails.getAccount());
     }
 }

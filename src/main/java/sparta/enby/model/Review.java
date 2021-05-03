@@ -33,8 +33,16 @@ public class Review extends BaseEntity{
     @JoinColumn(name = "board_id")
     private Board board;
 
-    public void addBoard(Board board){
+    public void addBoardAndAccount(Board board, Account account){
         this.board = board;
+        this.account = account;
         board.getReviews().add(this);
+        account.getReviews().add(this);
+    }
+    public void removeBoardAndAccount(Board board, Account account){
+        board.getReviews().remove(this);
+        account.getReviews().remove(this);
+        this.board = null;
+        this.account = null;
     }
 }

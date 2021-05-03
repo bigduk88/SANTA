@@ -9,4 +9,5 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     void deleteAllByBoard(Board board);
     List<Review> findAllByBoard(Board board);
+    boolean existsByBoard(Board board);
 }

@@ -42,7 +42,7 @@ public class Board extends BaseEntity {
 
     @OneToMany(mappedBy = "board")
     @Builder.Default
-    List<Registration> attendList = new ArrayList<>();
+    List<Registration> registrations = new ArrayList<>();
 
 
     public void addAccount(Account account) {
@@ -55,5 +55,13 @@ public class Board extends BaseEntity {
         this.contents = contents;
         this.meetTime = meetTime;
         this.location = location;
+    }
+    public void deleteBoard(Board board){
+        board.getAccount().getBoards().remove(this);
+        board.getReviews().removeAll(this.reviews);
+        board.getRegistrations().removeAll(this.registrations);
+        this.account = null;
+        this.reviews = null;
+        this.registrations = null;
     }
 }

@@ -15,7 +15,7 @@ public class UserService {
 
     public String oauth2AuthorizationKakao(String code){
         AuthorizationKakao authorization = oAuth2Kakao.callTokenApi(code);
-        Account account = oAuth2Kakao.callGetUserByAcessToken(authorization.getAccess_token());
+        Account account = oAuth2Kakao.callGetUserByAccessToken(authorization.getAccess_token());
         return jwtTokenProvider.createToken(account.getNickname(), account.getProfile_img(), account.getRoles());
     }
 }

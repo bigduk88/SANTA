@@ -15,6 +15,6 @@ public class RegistrationController {
 
     @PostMapping("/board/mating/{board_id}/register")
     public ResponseEntity makeRegistration(@RequestBody RegisterRequestDto registerRequestDto, @PathVariable Long board_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return registrationService.makeRegistration(registerRequestDto, board_id, userDetails);
+        return registrationService.makeRegistration(registerRequestDto, board_id, userDetails.getAccount());
     }
 }

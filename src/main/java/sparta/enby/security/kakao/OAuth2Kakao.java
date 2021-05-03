@@ -32,7 +32,7 @@ public class OAuth2Kakao {
     private final AccountRepository accountRepository;
 
     private final String KakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
-//    private final String frontendRedirectUrl = "http://localhost:3000";
+    //    private final String frontendRedirectUrl = "http://localhost:3000";
     private final String frontendRedirectUrl = "http://localhost:8080";
 
 
@@ -62,7 +62,7 @@ public class OAuth2Kakao {
     }
 
     @Transactional
-    public Account callGetUserByAcessToken(String accessToken) {
+    public Account callGetUserByAccessToken(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -76,17 +76,17 @@ public class OAuth2Kakao {
             JsonNode root = objectMapper.readTree(response.getBody());
             JsonNode kakao_account = root.path("kakao_account");
             String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
-            Account account = accountRepository.findByKakaoId(root.get("id").asLong());
-            if (account == null) {
-                accountRepository.save(Account.builder()
-                        .kakaoId(root.get("id").asLong())
-                        .password(password)
-                        .email(kakao_account.get("email").asText())
-                        .nickname(kakao_account.path("profile").path("nickname").asText())
-                        .profile_img(kakao_account.path("profile").path("profile_image_url").asText())
-                        .roles(Collections.singletonList("ROLE_USER"))
-                        .build());
+            if (accountRepository.existsByKakaoId(root.get("id").asLong())){
+                return accountRepository.findByKakaoId(root.get("id").asLong());
             }
+            Account account = accountRepository.save(Account.builder()
+                    .kakaoId(root.get("id").asLong())
+                    .password(password)
+                    .email(kakao_account.get("email").asText())
+                    .nickname(kakao_account.path("profile").path("nickname").asText())
+                    .profile_img(kakao_account.path("profile").path("profile_image_url").asText())
+                    .roles(Collections.singletonList("ROLE_USER"))
+                    .build());
             return account;
         } catch (RestClientException | JsonProcessingException ex) {
             ex.printStackTrace();
