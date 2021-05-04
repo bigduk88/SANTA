@@ -17,11 +17,13 @@ import java.io.IOException;
 public class ReviewController {
     private final ReviewService reviewService;
 
+    //후기 리스트
     @GetMapping("/main/review")
     public ResponseEntity getReviewList(){
         return reviewService.getReviewList();
     }
 
+    //후기 페이지
     @GetMapping("/board/mating/review")
     public Page<ReviewResponseDto> getReviewPage(@RequestParam("page") int page, @RequestParam("size") int size){
         return reviewService.getReviewPage(page, size);
@@ -33,11 +35,13 @@ public class ReviewController {
         return reviewService.writeReview(board_id, reviewRequestDto, userDetails);
     }
 
+    //후기 수정
     @PutMapping("/board/mating/{board_id}/review/{review_id}")
     public ResponseEntity editReview(@ModelAttribute ReviewRequestDto reviewRequestDto, @PathVariable Long board_id, @PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return reviewService.editReview(reviewRequestDto,board_id, review_id, userDetails);
     }
 
+    //후기 삭제
     @DeleteMapping("/board/mating/{board_id}/review/{review_id}")
     public ResponseEntity<String> deleteReview(@PathVariable Long review_id, @PathVariable Long board_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return reviewService.deleteReview(review_id,board_id,userDetails);

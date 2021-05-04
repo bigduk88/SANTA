@@ -34,7 +34,6 @@ public class RegistrationService {
         if (registration != null && registration.getAccount().equals(account)) {
             return new ResponseEntity<>("중복 요청은 안됩니다.", HttpStatus.BAD_REQUEST);
         }
-
         Registration newRegistration = Registration.builder()
                 .contents(registerRequestDto.getContents())
                 .account(account)
@@ -42,7 +41,7 @@ public class RegistrationService {
                 .build();
         registrationRepository.save(newRegistration);
         newRegistration.addBoardAndAccount(board, account);
-        return new ResponseEntity<>("성공적으로 신청하였습니다", HttpStatus.OK);
+        return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " +newRegistration.getId(), HttpStatus.OK);
     }
 
     @Transactional

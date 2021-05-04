@@ -4,13 +4,15 @@ import lombok.Data;
 
 @Data
 public class RegistrationResponseDto {
+    private Long register_id;
     private boolean accepted;
     private String contents;
     private String nickname;
     private String profile_img;
     private Long kakaoId;
 
-    public RegistrationResponseDto(boolean accepted, String contents,String nickname, String profile_img, Long kakaoId){
+    public RegistrationResponseDto(Long id, boolean accepted, String contents,String nickname, String profile_img, Long kakaoId){
+        this.register_id = id;
         this.accepted = accepted;
         this.contents = contents;
         this.nickname = nickname;

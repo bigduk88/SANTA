@@ -77,6 +77,7 @@ public class BoardService {
                         ).collect(Collectors.toList()),
                         board.getRegistrations().stream().map(
                                 registration -> new RegistrationResponseDto(
+                                        registration.getId(),
                                         registration.isAccepted(),
                                         registration.getContents(),
                                         registration.getAccount().getNickname(),
@@ -103,6 +104,7 @@ public class BoardService {
         }
         Page<BoardResponseDto> toMap = boards.map(board -> new BoardResponseDto(
                 board.getId(),
+                board.getBoard_imgUrl(),
                 board.getContents(),
                 board.getTitle(),
                 board.getLocation(),
@@ -149,16 +151,10 @@ public class BoardService {
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
-        Account account = accountRepository.findByKakaoId(userDetails.getAccount().getKakaoId());
-        if (account == null) {
-            return new ResponseEntity<>("없는 사용자입니다.", HttpStatus.BAD_REQUEST);
-        }
-        if (account != userDetails.getAccount()) {
+        Board board = boardRepository.findById(board_id).orElse(null);
+        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
             return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
         }
-
-        Board board = boardRepository.findById(board_id).orElse(null);
-
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         } else {

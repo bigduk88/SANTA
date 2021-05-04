@@ -17,19 +17,19 @@ import java.io.IOException;
 public class BoardController {
 
     private final BoardService boardService;
-
+    //게시글 리스트
     @GetMapping("/main/board")
     public ResponseEntity getBoardList() {
         return boardService.getBoardList();
     }
 
-    //모임 게시판
+    //게시글 페이지
     @GetMapping("/board/mating")
     public Page<BoardResponseDto> getBoard(@RequestParam("page") int page, @RequestParam("size") int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return boardService.getBoard(page, size, userDetails);
     }
 
-    //게시판 상세 페이지
+    //게시판 상세
     @GetMapping("/board/mating/{board_id}")
     public ResponseEntity getDetailBoard(@PathVariable Long board_id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return boardService.getDetailBoard(board_id, userDetails);
@@ -38,7 +38,6 @@ public class BoardController {
     //게시글 적기
     @PostMapping("/board/mating")
     public ResponseEntity<String> writeBoard(@ModelAttribute BoardRequestDto boardRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
-        System.out.println(userDetails.getAccount());
         return boardService.writeBoard(boardRequestDto, userDetails);
     }
 

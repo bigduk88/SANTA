@@ -15,6 +15,7 @@ import sparta.enby.service.UserService;
 public class UserController {
     private final UserService userService;
 
+    //카카오 로그인 + 사용자 정보 호출 + JWT token 제공
     @RequestMapping("/callback/kakao")
     public ResponseEntity oauth2AuthroziationKakao(@RequestParam("code") String code){
         if (code == null || code.isEmpty()){
