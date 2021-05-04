@@ -1,50 +1,54 @@
 package sparta.enby.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import sparta.enby.dto.ReviewRequestDto;
+import lombok.*;
 
 import javax.persistence.*;
 
-@NoArgsConstructor
 @Getter
+@Setter
 @Entity
-public class Review {
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@ToString(of = {"id", "review_imgUrl", "contents"})
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.AUTO)
-        private Long id;
+public class Review extends BaseEntity {
 
-        @Column
-        private String title;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @Column(name = "review_id")
+    private Long id;
 
-        @Column
-        private String contents;
+    @Column(nullable = false)
+    private String review_imgUrl;
 
-        @Column
-        private String imgUrl;
+    @Column(nullable = false)
+    private String contents;
 
-        @Column
-        private String date;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private Account account;
 
-        public Review(String title, String contents, String imgUrl, String date) {
-                this.title = title;
-                this.contents = contents;
-                this.imgUrl = imgUrl;
-                this.date = date;
-        }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id")
+    private Board board;
 
-        public Review(ReviewRequestDto requestDto) {
-                this.title = requestDto.getTitle();
-                this.contents = requestDto.getContents();
-                this.imgUrl = requestDto.getImgUrl();
-                this.date = requestDto.getDate();
-        }
+    public void addBoardAndAccount(Board board,  Account account) {
+        this.board = board;
+        this.account = account;
+        board.getReviews().add(this);
+        account.getReview().add(this);
+    }
 
-        public void update(ReviewRequestDto requestDto) {
-                this.title = requestDto.getTitle();
-                this.contents = requestDto.getContents();
-                this.imgUrl = requestDto.getImgUrl();
-                this.date = requestDto.getDate();
-        }
+    public void removeBoardAndAccount(Board board, Account account) {
+        board.getReview().remove(this);
+        account.getReviews().remove(this);
+        this.board = null;
+        this.account = null;
+    }
+
+    public void editREview(String contents, String review_imgUrl) {
+        this.contents = contents;
+        this.review_imgUrl = review_imgUrl;
+    }
 }

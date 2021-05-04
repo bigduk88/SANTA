@@ -6,8 +6,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
-public class ReviewRequestDto {
+public class BoardRequestDto {
 
-    private MultipartFile reviewImg;
+    private MultipartFile boardImg;
+    private String title;
     private String contents;
+    private String location;
+    private String meetTime;
 }
