@@ -36,12 +36,13 @@ public class RegistrationService {
         }
         Registration newRegistration = Registration.builder()
                 .contents(registerRequestDto.getContents())
+                .kakao_id(registerRequestDto.getKakao_id())
                 .account(account)
                 .accepted(false)
                 .build();
         registrationRepository.save(newRegistration);
         newRegistration.addBoardAndAccount(board, account);
-        return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " +newRegistration.getId(), HttpStatus.OK);
+        return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " + newRegistration.getId(), HttpStatus.OK);
     }
 
     @Transactional

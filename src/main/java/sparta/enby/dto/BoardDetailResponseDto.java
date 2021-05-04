@@ -17,6 +17,7 @@ public class BoardDetailResponseDto {
     private LocalDateTime meetTime;
     private List<ReviewResponseDto> reviews = new ArrayList<>();
     private List<RegistrationResponseDto> registrations = new ArrayList<>();
+    private int people_count;
 
     public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, String location, String board_imgUrl, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations) {
         this.id = id;
@@ -28,5 +29,6 @@ public class BoardDetailResponseDto {
         this.board_imgUrl = board_imgUrl;
         this.reviews = reviews;
         this.registrations = registrations;
+        this.people_count = registrations.size();
     }
 }

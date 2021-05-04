@@ -9,14 +9,14 @@ public class RegistrationResponseDto {
     private String contents;
     private String nickname;
     private String profile_img;
-    private Long kakaoId;
+    private String kakao_id;
 
-    public RegistrationResponseDto(Long id, boolean accepted, String contents,String nickname, String profile_img, Long kakaoId){
+    public RegistrationResponseDto(Long id, boolean accepted, String contents,String nickname, String profile_img, String kakao_id){
         this.register_id = id;
         this.accepted = accepted;
         this.contents = contents;
         this.nickname = nickname;
         this.profile_img = profile_img;
-        this.kakaoId = kakaoId;
+        this.kakao_id = kakao_id;
     }
 }

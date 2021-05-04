@@ -22,6 +22,8 @@ public class Registration extends BaseEntity {
 
     private String contents;
 
+    private String kakao_id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;

@@ -23,6 +23,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,7 @@ public class BoardService {
                                         registration.getContents(),
                                         registration.getAccount().getNickname(),
                                         registration.getAccount().getProfile_img(),
-                                        registration.getAccount().getKakaoId()
+                                        registration.getKakao_id()
                                 )
                         ).collect(Collectors.toList())
                 ))
@@ -96,6 +97,7 @@ public class BoardService {
     public Page<BoardResponseDto> getBoard(int page, int size, UserDetailsImpl userDetails) {
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Board> boards = boardRepository.findAll(pageRequest);
+        //        Page<Board> boards = boardRepository.findAllByMeetTimeBefore(now,pageRequest);
         if (page > boards.getTotalPages()) {
             return null;
         }
@@ -139,6 +141,7 @@ public class BoardService {
         Board board = Board.builder()
                 .title(boardRequestDto.getTitle())
                 .meetTime(meeting_time)
+                .people_max(boardRequestDto.getPeople_max())
                 .location(boardRequestDto.getLocation())
                 .contents(boardRequestDto.getContents())
                 .board_imgUrl(board_imgUrl).build();

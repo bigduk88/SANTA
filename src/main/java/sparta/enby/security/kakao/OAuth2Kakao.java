@@ -57,7 +57,7 @@ public class OAuth2Kakao {
         params.add("client_id", KakaoOauth2ClientId);
         //RedirectUri 생성
         //Frontend
-//        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
+//        params.add("redirect_uri", frontendRedirectUrl + "/oauth1");
         //Backend
         params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
         //인가 코드
@@ -103,21 +103,24 @@ public class OAuth2Kakao {
                 return accountRepository.findByKakaoId(root.get("id").asLong());
             }
             String profile_image_url = null;
-            if (kakao_account.path("profile").path("profile_image_url").asText().isEmpty() || kakao_account.path("profile").path("profile_image_url").asText() == null){
+            if (kakao_account.path("profile").path("profile_image_url").asText().isEmpty() || kakao_account.path("profile").path("profile_image_url").asText() == null) {
                 profile_image_url = "https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/unset_photo.jpeg";
-            }
-            else{
+            } else {
                 profile_image_url = kakao_account.path("profile").path("profile_image_url").asText();
             }
-            Account account = accountRepository.save(Account.builder()
-                    .kakaoId(root.get("id").asLong())
-                    .password(passwordEncoder.encode(password))
-                    .email(kakao_account.get("email").asText())
-                    .nickname(kakao_account.path("profile").path("nickname").asText())
-                    .profile_img(profile_image_url)
-                    .roles(Collections.singletonList("ROLE_USER"))
-                    .build());
+            Account account = accountRepository.findByNickname(kakao_account.path("profile").path("nickname").asText()).orElse(null);
+            if (account == null) {
+                Account newaccount = accountRepository.save(Account.builder()
+                        .password(passwordEncoder.encode(password))
+                        .email(kakao_account.get("email").asText())
+                        .nickname(kakao_account.path("profile").path("nickname").asText())
+                        .profile_img(profile_image_url)
+                        .roles(Collections.singletonList("ROLE_USER"))
+                        .build());
+                return newaccount;
+            }
             return account;
+
         } catch (RestClientException | JsonProcessingException ex) {
             ex.printStackTrace();
             throw new IllegalArgumentException("Failed");

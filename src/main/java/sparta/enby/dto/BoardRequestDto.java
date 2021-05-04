@@ -15,4 +15,5 @@ public class BoardRequestDto {
     private String contents;
     private String location;
     private String meetTime;
+    private int people_max;
 }

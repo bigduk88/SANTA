@@ -8,4 +8,5 @@ import lombok.Setter;
 public class RegisterRequestDto {
     private String contents;
     private boolean accepted;
+    private String kakao_id;
 }

@@ -32,6 +32,8 @@ public class Board extends BaseEntity {
 
     private String board_imgUrl;
 
+    private int people_max;
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;

@@ -13,8 +13,9 @@ public class ReviewResponseDto {
 
     public ReviewResponseDto() {}
 
-    public ReviewResponseDto(Long review_id, String contents) {
+    public ReviewResponseDto(Long review_id, String review_imgUrl, String contents) {
         this.review_id = review_id;
+        this.review_imgUrl = review_imgUrl;
         this.contents = contents;
     }
 
