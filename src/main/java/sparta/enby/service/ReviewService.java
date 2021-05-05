@@ -63,7 +63,8 @@ public class ReviewService {
         Page<ReviewResponseDto> toMap = reviewPage.map(review -> new ReviewResponseDto(
                 review.getId(),
                 review.getReview_imgUrl(),
-                review.getContents()
+                review.getContents(),
+                review.getBoard().getId()
         ));
         return toMap;
 

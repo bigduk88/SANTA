@@ -25,7 +25,7 @@ public class RegistrationService {
     @Transactional
     public ResponseEntity makeRegistration(RegisterRequestDto registerRequestDto, Long board_id, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        Registration registration = registrationRepository.findByAccount_KakaoId(userDetails.getAccount().getKakaoId()).orElse(null);
+        Registration registration = registrationRepository.findAllByBoardIdAndCreatedBy(board_id, userDetails.getUsername());
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
         if (board == null) {
             return new ResponseEntity<>("없는 게시글입니다", HttpStatus.BAD_REQUEST);

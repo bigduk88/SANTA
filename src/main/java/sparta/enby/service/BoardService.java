@@ -23,7 +23,6 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,6 @@ public class BoardService {
         ).collect(Collectors.toList());
         return ResponseEntity.ok().body(toList);
     }
-
 
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
