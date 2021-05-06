@@ -48,7 +48,9 @@ public class ProfileService {
                             board.getTitle(),
                             board.getBoard_imgUrl(),
                             board.getLocation(),
-                            board.getMeetTime()
+                            board.getMeetTime(),
+                            board.getPeople_current(),
+                            board.getPeople_max()
                     )
             ).collect(Collectors.toList()));
         }

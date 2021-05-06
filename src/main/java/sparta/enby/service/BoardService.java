@@ -67,6 +67,7 @@ public class BoardService {
                         board.getMeetTime(),
                         board.getLocation(),
                         board.getBoard_imgUrl(),
+                        board.getPeople_current(),
                         board.getPeople_max(),
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(

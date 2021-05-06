@@ -16,6 +16,12 @@ public class BoardResponseDto {
     private LocalDateTime meetTime;
     private LocalDateTime createdAt;
 
+    public BoardResponseDto(Long id, String title, LocalDateTime meetTime, LocalDateTime createdAt) {
+        this.id = id;
+        this.title = title;
+        this.meetTime = meetTime;
+        this.createdAt = createdAt;
+    }
 
     public BoardResponseDto(Long id, String title, String board_imgUrl, String contents, String location, LocalDateTime meetTime) {
         this.id = id;
@@ -24,12 +30,5 @@ public class BoardResponseDto {
         this.contents = contents;
         this.location = location;
         this.meetTime = meetTime;
-    }
-
-    public BoardResponseDto(Long id, String title, LocalDateTime meetTime, LocalDateTime createdAt) {
-        this.id = id;
-        this.title = title;
-        this.meetTime = meetTime;
-        this.createdAt = createdAt;
     }
 }
