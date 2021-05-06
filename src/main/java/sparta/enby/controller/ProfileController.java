@@ -2,6 +2,7 @@ package sparta.enby.controller;
 
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,7 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @GetMapping("/mypage/{name}")
-    public List<ProfileResponseDto> getProfile(@PathVariable String name, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity getProfile(@PathVariable String name, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return profileService.getProfile(name, userDetails);
     }
 }

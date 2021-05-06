@@ -9,6 +9,7 @@ import java.util.List;
 public class ProfileResponseDto {
 
     private Long id;
+    private String board_name;
     private String title;
     private String board_imgUrl;
     private String location;

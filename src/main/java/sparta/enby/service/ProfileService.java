@@ -1,7 +1,9 @@
 package sparta.enby.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import sparta.enby.dto.BoardDetailResponseDto;
 import sparta.enby.dto.BoardResponseDto;
@@ -31,7 +33,7 @@ public class ProfileService {
     private final ReviewRepository reviewRepository;
     private final RegistrationRepository registrationRepository;
 
-    public List<ProfileResponseDto> getProfile(String name, UserDetailsImpl userDetails) {
+    public ResponseEntity getProfile(String name, UserDetailsImpl userDetails) {
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
         if (account == null) {
             return null;
@@ -56,7 +58,7 @@ public class ProfileService {
                     )
             ).collect(Collectors.toList()));
         }
-        for (Registration registration :  acceptedList){
+        for (Registration registration : acceptedList) {
             List<Board> acceptedBoard = boardRepository.findAllByRegistrations(registration);
             acceptedBoardList.addAll(acceptedBoard.stream().map(
                     board -> new ProfileResponseDto(
@@ -80,8 +82,8 @@ public class ProfileService {
                         board.getCreatedAt()
                 )
         ).collect(Collectors.toList());
-        toList = Stream.concat(createdBoardList.stream(),acceptedBoardList.stream() ).collect(Collectors.toList());
+        toList = Stream.concat(createdBoardList.stream(), acceptedBoardList.stream()).collect(Collectors.toList());
         toList = Stream.concat(toList.stream(), myboardList.stream()).collect(Collectors.toList());
-        return toList;
+        return ResponseEntity.ok().body(toList);
     }
 }

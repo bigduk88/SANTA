@@ -6,7 +6,7 @@ import sparta.enby.model.Account;
 import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    Optional <Account> findByNickname(String nickname);
+    Optional<Account> findByNickname(String nickname);
     Account findByKakaoId(Long kakaoId);
     boolean existsByKakaoId(Long kakaoId);
 }

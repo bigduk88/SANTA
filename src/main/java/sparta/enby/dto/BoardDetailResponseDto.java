@@ -15,17 +15,19 @@ public class BoardDetailResponseDto {
     private String board_imgUrl;
     private String location;
     private LocalDateTime meetTime;
+    private LocalDateTime createdAt;
     private List<ReviewResponseDto> reviews = new ArrayList<>();
     private List<RegistrationResponseDto> registrations = new ArrayList<>();
     private int people_current;
     private int people_max;
 
-    public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, String location, String board_imgUrl, int people_current, int people_max, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations) {
+    public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, LocalDateTime createdAt, String location, String board_imgUrl, int people_current, int people_max, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations) {
         this.id = id;
         this.createdBy = createdBy;
         this.title = title;
         this.contents = contents;
         this.meetTime = meetTime;
+        this.createdAt = createdAt;
         this.location = location;
         this.board_imgUrl = board_imgUrl;
         this.people_current = people_current;

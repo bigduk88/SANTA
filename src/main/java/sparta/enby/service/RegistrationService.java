@@ -41,13 +41,15 @@ public class RegistrationService {
                 .accepted(false)
                 .build();
         int i = board.getPeople_current();
-        i = i + 1;
-        board.setPeople_current(i);
         if (board.getPeople_current() >= board.getPeople_max()){
             return ResponseEntity.badRequest().body("모집 인원이 다 찼습니다.");
         }
-        registrationRepository.save(newRegistration);
-
+        else{
+            i = i + 1;
+            board.setPeople_current(i);
+            registrationRepository.save(newRegistration);
+            System.out.println("저장완료");
+        }
         newRegistration.addBoardAndAccount(board, account);
         return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " + newRegistration.getId(), HttpStatus.OK);
     }

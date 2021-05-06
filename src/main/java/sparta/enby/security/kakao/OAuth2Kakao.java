@@ -58,7 +58,7 @@ public class OAuth2Kakao {
         //RedirectUri 생성
         //Frontend
 //        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
-        //Backend
+//        //Backend
         params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
         //인가 코드
         params.add("code", code);

@@ -7,9 +7,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import sparta.enby.dto.*;
 import sparta.enby.model.Account;
 import sparta.enby.model.Board;
+import sparta.enby.model.Registration;
 import sparta.enby.model.Review;
 import sparta.enby.repository.AccountRepository;
 import sparta.enby.repository.BoardRepository;
@@ -26,7 +28,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +42,7 @@ public class BoardService {
     private AccountRepository accountRepository;
     private ReviewRepository reviewRepository;
     private RegistrationRepository registrationRepository;
+    private RegistrationService registrationService;
 
 
     public ResponseEntity getBoardList() {
@@ -65,6 +71,7 @@ public class BoardService {
                         board.getTitle(),
                         board.getContents(),
                         board.getMeetTime(),
+                        board.getCreatedAt(),
                         board.getLocation(),
                         board.getBoard_imgUrl(),
                         board.getPeople_current(),
@@ -118,23 +125,9 @@ public class BoardService {
 
     // 게시글 쓰기
     @Transactional
-    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) throws IOException {
+    public Long writeBoard(BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) throws IOException {
 //    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, Account account) throws IOException {
-        if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
-            return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getContents() == null || boardRequestDto.getContents().isEmpty()) {
-            return new ResponseEntity<>("내용을 기입해주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getLocation() == null || boardRequestDto.getLocation().isEmpty()) {
-            return new ResponseEntity<>("만날 장소를 올려주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getTitle() == null || boardRequestDto.getTitle().isEmpty()) {
-            return new ResponseEntity<>("제목을 입력해 주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getMeetTime() == null || boardRequestDto.getMeetTime().isEmpty()) {
-            return new ResponseEntity<>("모임 시간을 설정해주세요", HttpStatus.BAD_REQUEST);
-        }
+//
 
         String board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
         String time = boardRequestDto.getMeetTime();
@@ -148,7 +141,7 @@ public class BoardService {
                 .board_imgUrl(board_imgUrl).build();
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
-        return new ResponseEntity<>("성공적으로 저장 완료하였습니다", HttpStatus.OK);
+        return newBoard.getId();
     }
 
 
@@ -199,7 +192,7 @@ public class BoardService {
                 location = boardRequestDto.getLocation();
             }
             int people_max = 0;
-            if (boardRequestDto.getPeople_max() > 5){
+            if (boardRequestDto.getPeople_max() > 5) {
                 return ResponseEntity.badRequest().body("최대인원은 4인이하 입니다");
             }
             if (boardRequestDto.getPeople_max() == 0) {
@@ -222,8 +215,8 @@ public class BoardService {
         if (!board.getAccount().getNickname().equals(account.getNickname())) {
             return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다", HttpStatus.BAD_REQUEST);
         }
-        if (board.getReviews() != null && board.getRegistrations() != null){
-            List<Review>reviews = board.getReviews();
+        if (board.getReviews() != null && board.getRegistrations() != null) {
+            List<Review> reviews = board.getReviews();
             for (Review review : reviews) {
                 fileUploaderService.removeImage(review.getReview_imgUrl());
                 reviewRepository.deleteAllByBoard(board);
@@ -235,6 +228,6 @@ public class BoardService {
         board.deleteBoard(board);
         boardRepository.deleteById(board_id);
         System.out.println("board deleted");
-        return new ResponseEntity<>("성공적으로 삭제 하였습니다",HttpStatus.OK);
-}
+        return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
+    }
 }
