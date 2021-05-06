@@ -53,12 +53,13 @@ public class Board extends BaseEntity {
         this.account = account;
     }
 
-    public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location){
+    public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location, int people_max){
         this.board_imgUrl = board_imgUrl;
         this.title = title;
         this.contents = contents;
         this.meetTime = meetTime;
         this.location = location;
+        this.people_max = people_max;
     }
     public void deleteBoard(Board board){
         board.getAccount().getBoards().remove(this);

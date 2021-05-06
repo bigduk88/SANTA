@@ -37,12 +37,14 @@ public class ProfileService {
             return null;
         }
         List<Registration> registrations = registrationRepository.findAllByCreatedBy(name);
+        List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrue();
         List<ProfileResponseDto> toList = new ArrayList<>();
-        List<ProfileResponseDto> myboardsList = new ArrayList<>();
-        List<ProfileResponseDto> createdboardList = new ArrayList<>();
+        List<ProfileResponseDto> myboardList = new ArrayList<>();
+        List<ProfileResponseDto> createdBoardList = new ArrayList<>();
+        List<ProfileResponseDto> acceptedBoardList = new ArrayList<>();
         for (Registration registration : registrations) {
             List<Board> boardList = boardRepository.findAllByRegistrations(registration);
-            createdboardList.addAll(boardList.stream().map(
+            createdBoardList.addAll(boardList.stream().map(
                     board -> new ProfileResponseDto(
                             board.getId(),
                             board.getTitle(),
@@ -54,8 +56,23 @@ public class ProfileService {
                     )
             ).collect(Collectors.toList()));
         }
+        for (Registration registration :  acceptedList){
+            List<Board> acceptedBoard = boardRepository.findAllByRegistrations(registration);
+            acceptedBoardList.addAll(acceptedBoard.stream().map(
+                    board -> new ProfileResponseDto(
+                            board.getId(),
+                            board.getTitle(),
+                            board.getBoard_imgUrl(),
+                            board.getLocation(),
+                            board.getMeetTime(),
+                            board.getPeople_current(),
+                            board.getPeople_max()
+                    )
+            ).collect(Collectors.toList()));
+            System.out.println(acceptedBoard);
+        }
         List<Board> myboards = boardRepository.findAllByCreatedBy(name);
-        myboardsList = myboards.stream().map(
+        myboardList = myboards.stream().map(
                 board -> new ProfileResponseDto(
                         board.getId(),
                         board.getTitle(),
@@ -63,6 +80,8 @@ public class ProfileService {
                         board.getCreatedAt()
                 )
         ).collect(Collectors.toList());
-        return toList = Stream.concat(createdboardList.stream(), myboardsList.stream()).collect(Collectors.toList());
+        toList = Stream.concat(createdBoardList.stream(),acceptedBoardList.stream() ).collect(Collectors.toList());
+        toList = Stream.concat(toList.stream(), myboardList.stream()).collect(Collectors.toList());
+        return toList;
     }
 }

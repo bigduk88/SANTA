@@ -198,8 +198,15 @@ public class BoardService {
             } else {
                 location = boardRequestDto.getLocation();
             }
-
-            board.update(board_imgUrl, title, contents, time, location);
+            int people_max = 0;
+            if (boardRequestDto.getPeople_max() > 5){
+                return ResponseEntity.badRequest().body("최대인원은 4인이하 입니다");
+            }
+            if (boardRequestDto.getPeople_max() == 0) {
+                people_max = board.getPeople_max();
+            }
+            people_max = boardRequestDto.getPeople_max();
+            board.update(board_imgUrl, title, contents, time, location, people_max);
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
         }
     }
