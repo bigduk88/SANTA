@@ -42,7 +42,7 @@ public class ProfileService {
         List<ProfileResponseDto> createdboardList = new ArrayList<>();
         for (Registration registration : registrations) {
             List<Board> boardList = boardRepository.findAllByRegistrations(registration);
-            createdboardList = boardList.stream().map(
+            createdboardList.addAll(boardList.stream().map(
                     board -> new ProfileResponseDto(
                             board.getId(),
                             board.getTitle(),
@@ -50,9 +50,7 @@ public class ProfileService {
                             board.getLocation(),
                             board.getMeetTime()
                     )
-            ).collect(Collectors.toList());
-            createdboardList = Stream.concat(createdboardList.stream(),createdboardList.stream()).collect(Collectors.toList());
-            System.out.println(createdboardList);
+            ).collect(Collectors.toList()));
         }
         List<Board> myboards = boardRepository.findAllByCreatedBy(name);
         myboardsList = myboards.stream().map(
@@ -63,8 +61,6 @@ public class ProfileService {
                         board.getCreatedAt()
                 )
         ).collect(Collectors.toList());
-
-        System.out.println(createdboardList);
         return toList = Stream.concat(createdboardList.stream(), myboardsList.stream()).collect(Collectors.toList());
     }
 }
