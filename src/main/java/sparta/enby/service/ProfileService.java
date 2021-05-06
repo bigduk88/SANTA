@@ -2,6 +2,7 @@ package sparta.enby.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import sparta.enby.dto.BoardDetailResponseDto;
 import sparta.enby.dto.BoardResponseDto;
 import sparta.enby.dto.MyBoardResponseDto;
@@ -18,6 +19,7 @@ import sparta.enby.security.UserDetailsImpl;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,20 +38,33 @@ public class ProfileService {
         }
         List<Registration> registrations = registrationRepository.findAllByCreatedBy(name);
         List<ProfileResponseDto> toList = new ArrayList<>();
+        List<ProfileResponseDto> myboardsList = new ArrayList<>();
+        List<ProfileResponseDto> createdboardList = new ArrayList<>();
         for (Registration registration : registrations) {
-            List<Board> boards = boardRepository.findAllByRegistrations(registration);
-            System.out.println(boards);
-             toList = boards.stream().map(
+            List<Board> boardList = boardRepository.findAllByRegistrations(registration);
+            createdboardList = boardList.stream().map(
                     board -> new ProfileResponseDto(
                             board.getId(),
                             board.getTitle(),
                             board.getBoard_imgUrl(),
-                            board.getMeetTime(),
                             board.getLocation(),
-                            board.getPeople_max()
+                            board.getMeetTime()
                     )
             ).collect(Collectors.toList());
+            createdboardList = Stream.concat(createdboardList.stream(),createdboardList.stream()).collect(Collectors.toList());
+            System.out.println(createdboardList);
         }
-        return toList;
+        List<Board> myboards = boardRepository.findAllByCreatedBy(name);
+        myboardsList = myboards.stream().map(
+                board -> new ProfileResponseDto(
+                        board.getId(),
+                        board.getTitle(),
+                        board.getMeetTime(),
+                        board.getCreatedAt()
+                )
+        ).collect(Collectors.toList());
+
+        System.out.println(createdboardList);
+        return toList = Stream.concat(createdboardList.stream(), myboardsList.stream()).collect(Collectors.toList());
     }
 }

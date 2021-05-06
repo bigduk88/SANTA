@@ -17,9 +17,10 @@ public class BoardDetailResponseDto {
     private LocalDateTime meetTime;
     private List<ReviewResponseDto> reviews = new ArrayList<>();
     private List<RegistrationResponseDto> registrations = new ArrayList<>();
-    private int people_count;
+    private int people_current;
+    private int people_max;
 
-    public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, String location, String board_imgUrl, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations) {
+    public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, String location, String board_imgUrl,  int people_max, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations) {
         this.id = id;
         this.createdBy = createdBy;
         this.title = title;
@@ -27,8 +28,16 @@ public class BoardDetailResponseDto {
         this.meetTime = meetTime;
         this.location = location;
         this.board_imgUrl = board_imgUrl;
+        this.people_max = people_max;
         this.reviews = reviews;
         this.registrations = registrations;
-        this.people_count = registrations.size();
+    }
+
+    public BoardDetailResponseDto(Long id, String title, String board_imgUrl, String location, LocalDateTime meetTime) {
+        this.id = id;
+        this.title = title;
+        this.board_imgUrl = board_imgUrl;
+        this.location = location;
+        this.meetTime = meetTime;
     }
 }

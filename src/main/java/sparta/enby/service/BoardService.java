@@ -45,6 +45,7 @@ public class BoardService {
                 board -> new BoardResponseDto(
                         board.getId(),
                         board.getTitle(),
+                        board.getBoard_imgUrl(),
                         board.getContents(),
                         board.getLocation(),
                         board.getMeetTime()
@@ -66,6 +67,7 @@ public class BoardService {
                         board.getMeetTime(),
                         board.getLocation(),
                         board.getBoard_imgUrl(),
+                        board.getPeople_max(),
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(
                                         review.getId(),

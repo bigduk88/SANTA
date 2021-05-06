@@ -41,6 +41,7 @@ public class RegistrationService {
                 .accepted(false)
                 .build();
         registrationRepository.save(newRegistration);
+        board.setPeople_current(+1);
         newRegistration.addBoardAndAccount(board, account);
         return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " + newRegistration.getId(), HttpStatus.OK);
     }
