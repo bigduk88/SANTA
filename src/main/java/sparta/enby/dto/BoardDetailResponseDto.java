@@ -1,5 +1,6 @@
 package sparta.enby.dto;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -18,8 +19,9 @@ public class BoardDetailResponseDto {
     private List<ReviewResponseDto> reviews = new ArrayList<>();
     private List<RegistrationResponseDto> registrations = new ArrayList<>();
     private int people_count;
+    private Boolean deadlineStatus;
 
-    public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, String location, String board_imgUrl, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations) {
+    public BoardDetailResponseDto(Long id, String createdBy, String title, String contents, LocalDateTime meetTime, String location, String board_imgUrl, List<ReviewResponseDto> reviews, List<RegistrationResponseDto> registrations, Boolean deadlineStatus) {
         this.id = id;
         this.createdBy = createdBy;
         this.title = title;
@@ -30,5 +32,6 @@ public class BoardDetailResponseDto {
         this.reviews = reviews;
         this.registrations = registrations;
         this.people_count = registrations.size();
+        this.deadlineStatus = deadlineStatus;
     }
 }

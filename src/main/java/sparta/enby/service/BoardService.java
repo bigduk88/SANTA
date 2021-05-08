@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,13 +45,30 @@ public class BoardService {
         List<BoardResponseDto> toList = boards.stream().map(
                 board -> new BoardResponseDto(
                         board.getId(),
-                        board.getTitle(),
+                        board.getBoard_imgUrl(),
                         board.getContents(),
+                        board.getTitle(),
                         board.getLocation(),
-                        board.getMeetTime()
+                        board.getMeetTime(),
+                        board.getDeadlineStatus()
                 )
         ).collect(Collectors.toList());
+        toList.forEach(deadlineStatus -> this.updateDeadlineStatus(deadlineStatus));
         return ResponseEntity.ok().body(toList);
+    }
+
+    @Transactional
+    public void updateDeadlineStatus(BoardResponseDto boardResponse) {
+        Board board = boardRepository.findById(boardResponse.getId()).orElse(null);
+        if (board != null) {
+            board.update(boardResponse.getBoard_imgUrl(),
+                    boardResponse.getTitle(),
+                    boardResponse.getContents(),
+                    boardResponse.getMeetTime(),
+                    boardResponse.getLocation(),
+                    boardResponse.getDeadlineStatus());
+            boardRepository.save(board);
+        }
     }
 
     //게시글 상세 페이지
@@ -83,7 +101,8 @@ public class BoardService {
                                         registration.getAccount().getProfile_img(),
                                         registration.getKakao_id()
                                 )
-                        ).collect(Collectors.toList())
+                        ).collect(Collectors.toList()),
+                        board.getDeadlineStatus()
                 ))
                 .collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
@@ -108,7 +127,8 @@ public class BoardService {
                 board.getContents(),
                 board.getTitle(),
                 board.getLocation(),
-                board.getMeetTime()
+                board.getMeetTime(),
+                board.getDeadlineStatus()
         ));
         return toMap;
     }
@@ -142,20 +162,21 @@ public class BoardService {
                 .people_max(boardRequestDto.getPeople_max())
                 .location(boardRequestDto.getLocation())
                 .contents(boardRequestDto.getContents())
-                .board_imgUrl(board_imgUrl).build();
+                .board_imgUrl(board_imgUrl)
+                .deadlineStatus(false).build();
+
         Board newBoard = boardRepository.save(board);
-        newBoard.addAccount(userDetails.getAccount());
+//        newBoard.addAccount(userDetails.getAccount());
         return new ResponseEntity<>("성공적으로 저장 완료하였습니다", HttpStatus.OK);
     }
-
 
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
-            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
-        }
+//        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
+//            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
+//        }
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         } else {
@@ -190,13 +211,14 @@ public class BoardService {
 
             String location = null;
             if (boardRequestDto.getLocation() == null || boardRequestDto.getLocation().isEmpty()) {
-//            if (boardRequestDto.getLocation().isEmpty() || boardRequestDto.getLocation() == null) {
                 location = board.getLocation();
             } else {
                 location = boardRequestDto.getLocation();
             }
 
-            board.update(board_imgUrl, title, contents, time, location);
+            Boolean deadlineStatus = boardRequestDto.getDeadlineStatus();
+
+            board.update(board_imgUrl, title, contents, time, location, deadlineStatus);
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
         }
     }
@@ -227,4 +249,13 @@ public class BoardService {
         System.out.println("board deleted");
         return new ResponseEntity<>("성공적으로 삭제 하였습니다",HttpStatus.OK);
 }
+
+    public ResponseEntity clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account) {
+        Board board = boardRepository.findById(board_id).orElseThrow(
+                () -> new IllegalArgumentException("해당 아이디의 게시글이 없습니다")
+        );
+        board.changeDeadlineStatus(changeDeadlineRequestDto);
+        return new ResponseEntity<>("성공적으로 마감상태가 변경되었습니다", HttpStatus.OK);
+    }
+
 }
