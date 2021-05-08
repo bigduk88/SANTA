@@ -3,12 +3,9 @@ package sparta.enby.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import sparta.enby.dto.BoardDetailResponseDto;
-import sparta.enby.dto.BoardResponseDto;
+import sparta.enby.dto.AttendedBoardDto;
 import sparta.enby.dto.MyBoardResponseDto;
-import sparta.enby.dto.ProfileResponseDto;
+import sparta.enby.dto.RegisteredBoardDto;
 import sparta.enby.model.Account;
 import sparta.enby.model.Board;
 import sparta.enby.model.Registration;
@@ -19,9 +16,7 @@ import sparta.enby.repository.ReviewRepository;
 import sparta.enby.security.UserDetailsImpl;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,21 +28,27 @@ public class ProfileService {
     private final ReviewRepository reviewRepository;
     private final RegistrationRepository registrationRepository;
 
-    public ResponseEntity getProfile(String name, UserDetailsImpl userDetails) {
+    public ResponseEntity<Object> getProfile(String name, UserDetailsImpl userDetails) {
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
         if (account == null) {
             return null;
         }
         List<Registration> registrations = registrationRepository.findAllByCreatedBy(name);
         List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrue();
-        List<ProfileResponseDto> toList = new ArrayList<>();
-        List<ProfileResponseDto> myboardList = new ArrayList<>();
-        List<ProfileResponseDto> createdBoardList = new ArrayList<>();
-        List<ProfileResponseDto> acceptedBoardList = new ArrayList<>();
+        List<Object> toList = new ArrayList<>();
+
+        //신청한 모임
+        List<RegisteredBoardDto> registeredBoardList = new ArrayList<>();
+       //참가한 모임
+        List<AttendedBoardDto> attendedBoardList = new ArrayList<>();
+       // 생성한 모임
+        List<MyBoardResponseDto> myboardList = new ArrayList<>();
+
+        //신청한 모임 Mapping
         for (Registration registration : registrations) {
             List<Board> boardList = boardRepository.findAllByRegistrations(registration);
-            createdBoardList.addAll(boardList.stream().map(
-                    board -> new ProfileResponseDto(
+            registeredBoardList.addAll(boardList.stream().map(
+                    board -> new RegisteredBoardDto(
                             board.getId(),
                             board.getTitle(),
                             board.getBoard_imgUrl(),
@@ -59,9 +60,9 @@ public class ProfileService {
             ).collect(Collectors.toList()));
         }
         for (Registration registration : acceptedList) {
-            List<Board> acceptedBoard = boardRepository.findAllByRegistrations(registration);
-            acceptedBoardList.addAll(acceptedBoard.stream().map(
-                    board -> new ProfileResponseDto(
+            List<Board> attendedBoard = boardRepository.findAllByRegistrations(registration);
+            attendedBoardList.addAll(attendedBoard.stream().map(
+                    board -> new AttendedBoardDto(
                             board.getId(),
                             board.getTitle(),
                             board.getBoard_imgUrl(),
@@ -71,18 +72,17 @@ public class ProfileService {
                             board.getPeople_max()
                     )
             ).collect(Collectors.toList()));
-            System.out.println(acceptedBoard);
         }
         List<Board> myboards = boardRepository.findAllByCreatedBy(name);
         myboardList = myboards.stream().map(
-                board -> new ProfileResponseDto(
+                board -> new MyBoardResponseDto(
                         board.getId(),
                         board.getTitle(),
                         board.getMeetTime(),
                         board.getCreatedAt()
                 )
         ).collect(Collectors.toList());
-        toList = Stream.concat(createdBoardList.stream(), acceptedBoardList.stream()).collect(Collectors.toList());
+        toList = Stream.concat(registeredBoardList.stream(), attendedBoardList.stream()).collect(Collectors.toList());
         toList = Stream.concat(toList.stream(), myboardList.stream()).collect(Collectors.toList());
         return ResponseEntity.ok().body(toList);
     }

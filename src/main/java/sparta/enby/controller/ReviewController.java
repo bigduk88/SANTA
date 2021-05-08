@@ -11,6 +11,7 @@ import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.service.ReviewService;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +30,11 @@ public class ReviewController {
         return reviewService.getReviewPage(page, size);
     }
 
+    @GetMapping("/board/mating/review/{review_id}")
+    public List<ReviewResponseDto> getDetailReview(@PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return reviewService.getDetailReview(review_id, userDetails);
+    }
+
     //review 작성
     @PostMapping("/board/mating/{board_id}/review")
     public ResponseEntity<String> writeReview(@PathVariable Long board_id, @ModelAttribute ReviewRequestDto reviewRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
@@ -42,8 +48,8 @@ public class ReviewController {
     }
 
     //후기 삭제
-    @DeleteMapping("/board/mating/{board_id}/review/{review_id}")
-    public ResponseEntity<String> deleteReview(@PathVariable Long review_id, @PathVariable Long board_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return reviewService.deleteReview(review_id,board_id,userDetails);
+    @DeleteMapping("/board/mating/review/{review_id}")
+    public ResponseEntity<String> deleteReview(@PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return reviewService.deleteReview(review_id,userDetails);
     }
 }

@@ -35,12 +35,4 @@ public class BoardDetailResponseDto {
         this.reviews = reviews;
         this.registrations = registrations;
     }
-
-    public BoardDetailResponseDto(Long id, String title, String board_imgUrl, String location, LocalDateTime meetTime) {
-        this.id = id;
-        this.title = title;
-        this.board_imgUrl = board_imgUrl;
-        this.location = location;
-        this.meetTime = meetTime;
-    }
 }

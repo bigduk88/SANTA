@@ -1,9 +1,6 @@
 package sparta.enby.model;
 
 import lombok.*;
-import org.checkerframework.checker.units.qual.C;
-import sparta.enby.dto.RegisterRequestDto;
-import sparta.enby.dto.ReviewRequestDto;
 
 import javax.persistence.*;
 
@@ -20,6 +17,9 @@ public class Review extends BaseEntity{
     @Id
     @Column(name = "review_id")
     private Long id;
+
+    @Column(nullable = false)
+    private String title;
 
     @Column(nullable = false)
     private String review_imgUrl;

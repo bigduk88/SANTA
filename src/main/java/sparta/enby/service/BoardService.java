@@ -7,11 +7,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import sparta.enby.dto.*;
 import sparta.enby.model.Account;
 import sparta.enby.model.Board;
-import sparta.enby.model.Registration;
 import sparta.enby.model.Review;
 import sparta.enby.repository.AccountRepository;
 import sparta.enby.repository.BoardRepository;
@@ -28,10 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
 @Service
 @RequiredArgsConstructor
@@ -39,19 +34,23 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final S3Service uploader;
     private final FileUploaderService fileUploaderService;
-    private AccountRepository accountRepository;
-    private ReviewRepository reviewRepository;
-    private RegistrationRepository registrationRepository;
-    private RegistrationService registrationService;
+    private final AccountRepository accountRepository;
+    private final ReviewRepository reviewRepository;
+    private final RegistrationRepository registrationRepository;
+    private final RegistrationService registrationService;
 
 
-    public ResponseEntity getBoardList() {
+    public ResponseEntity<List<BoardResponseDto>> getBoardList() {
+        // 모든 게시글들을 List로 받아서
         List<Board> boards = boardRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        // List에 있는 객체들을 BoardResponseDto에 명시된 객체들에 mapping하기 위해서 stream을 통해서 목록들을 읽어온 다음 list로 형변환
         List<BoardResponseDto> toList = boards.stream().map(
                 board -> new BoardResponseDto(
                         board.getId(),
                         board.getTitle(),
                         board.getBoard_imgUrl(),
+                        board.getPeople_current(),
+                        board.getPeople_max(),
                         board.getContents(),
                         board.getLocation(),
                         board.getMeetTime()
@@ -62,7 +61,7 @@ public class BoardService {
 
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
-
+        // 해당 게사글 id로 찾은 List들을 stream으로 읽어와서 BoardDetailResponseDto에 map
         List<Board> boards = boardRepository.findAllById(board_id);
         List<BoardDetailResponseDto> toList = boards.stream().map(
                 board -> new BoardDetailResponseDto(
@@ -76,14 +75,17 @@ public class BoardService {
                         board.getBoard_imgUrl(),
                         board.getPeople_current(),
                         board.getPeople_max(),
+                        //여기에 게시글에 달린 후기 리뷰를 ReviewResponseDto에 매핑
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(
                                         review.getId(),
+                                        review.getTitle(),
                                         review.getReview_imgUrl(),
                                         review.getContents(),
                                         review.getBoard().getId()
                                 )
                         ).collect(Collectors.toList()),
+                        // 게시글에 참여 신청한 내역을 RegistrationResponseDto에 매핑
                         board.getRegistrations().stream().map(
                                 registration -> new RegistrationResponseDto(
                                         registration.getId(),
@@ -126,10 +128,12 @@ public class BoardService {
     // 게시글 쓰기
     @Transactional
     public Long writeBoard(BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) throws IOException {
-//    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, Account account) throws IOException {
-//
-
-        String board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
+        String board_imgUrl = null;
+        if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
+            board_imgUrl = "https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png";
+        } else {
+            board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
+        }
         String time = boardRequestDto.getMeetTime();
         LocalDateTime meeting_time = LocalDateTime.parse(time, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         Board board = Board.builder()
@@ -186,7 +190,6 @@ public class BoardService {
 
             String location = null;
             if (boardRequestDto.getLocation() == null || boardRequestDto.getLocation().isEmpty()) {
-//            if (boardRequestDto.getLocation().isEmpty() || boardRequestDto.getLocation() == null) {
                 location = board.getLocation();
             } else {
                 location = boardRequestDto.getLocation();
@@ -204,8 +207,8 @@ public class BoardService {
         }
     }
 
-
     //게시글 삭제
+    //Fixme: NullPointerException error
     @Transactional
     public ResponseEntity<String> deleteBoard(Long board_id, Account account) {
         Board board = boardRepository.findById(board_id).orElse(null);
@@ -215,12 +218,21 @@ public class BoardService {
         if (!board.getAccount().getNickname().equals(account.getNickname())) {
             return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다", HttpStatus.BAD_REQUEST);
         }
-        if (board.getReviews() != null && board.getRegistrations() != null) {
-            List<Review> reviews = board.getReviews();
-            for (Review review : reviews) {
-                fileUploaderService.removeImage(review.getReview_imgUrl());
-                reviewRepository.deleteAllByBoard(board);
-                System.out.println("review deleted");
+        if (!board.getReviews().isEmpty()) {
+            System.out.println(board.getReviews());
+            if (reviewRepository.existsByBoard(board)) {
+                List<Review> reviews = reviewRepository.findAllByBoard(board);
+                for (Review review : reviews) {
+                    fileUploaderService.removeImage(review.getReview_imgUrl());
+                    System.out.println("review delete start");
+                    reviewRepository.deleteAllByBoard(board);
+                    System.out.println("review deleted");
+                }
+            }
+        }
+        if (!board.getRegistrations().isEmpty()) {
+            if (registrationRepository.existsByBoardId(board_id)) {
+                System.out.println("registration delete start");
                 registrationRepository.deleteAllByBoard(board);
                 System.out.println("register deleted");
             }

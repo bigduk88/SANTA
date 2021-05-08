@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.web.bind.annotation.*;
 import sparta.enby.dto.BoardRequestDto;
 import sparta.enby.dto.BoardResponseDto;
@@ -43,9 +42,9 @@ public class BoardController {
     //게시글 적기
     @PostMapping("/board/mating")
     public ResponseEntity writeBoard(@ModelAttribute BoardRequestDto boardRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
-        if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
-            return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
-        }
+//        if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
+//            return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
+//        }
         if (boardRequestDto.getContents() == null || boardRequestDto.getContents().isEmpty()) {
             return new ResponseEntity<>("내용을 기입해주세요", HttpStatus.BAD_REQUEST);
         }

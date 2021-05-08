@@ -1,15 +1,12 @@
 package sparta.enby.service;
 
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import sparta.enby.dto.BoardResponseDto;
 import sparta.enby.dto.ReviewRequestDto;
 import sparta.enby.dto.ReviewResponseDto;
 import sparta.enby.model.Account;
@@ -43,6 +40,7 @@ public class ReviewService {
         List<ReviewResponseDto> toList = reviews.stream().map(
                 review -> new ReviewResponseDto(
                         review.getId(),
+                        review.getTitle(),
                         review.getReview_imgUrl(),
                         review.getContents(),
                         review.getBoard().getId()
@@ -62,6 +60,7 @@ public class ReviewService {
         }
         Page<ReviewResponseDto> toMap = reviewPage.map(review -> new ReviewResponseDto(
                 review.getId(),
+                review.getTitle(),
                 review.getReview_imgUrl(),
                 review.getContents(),
                 review.getBoard().getId()
@@ -69,6 +68,23 @@ public class ReviewService {
         return toMap;
 
     }
+
+    public List<ReviewResponseDto> getDetailReview(Long review_id, UserDetailsImpl userDetails){
+        List<Review> reviews = reviewRepository.findAllById(review_id);
+        List<ReviewResponseDto>toList = reviews.stream().map(
+                review -> new ReviewResponseDto(
+                        review.getId(),
+                        review.getTitle(),
+                        review.getReview_imgUrl(),
+                        review.getContents(),
+                        review.getBoard().getId()
+                )
+        ).collect(Collectors.toList());
+        return toList;
+    }
+
+
+
 
     //게시글 작성
     @Transactional
@@ -81,6 +97,7 @@ public class ReviewService {
             return new ResponseEntity<>("없는 게시글입니다", HttpStatus.BAD_REQUEST);
         }
         Review review = Review.builder()
+                .title(reviewRequestDto.getTitle())
                 .contents(reviewRequestDto.getContents())
                 .review_imgUrl(review_imgUrl)
                 .account(account)
@@ -124,9 +141,9 @@ public class ReviewService {
     }
 
     @Transactional
-    public ResponseEntity<String> deleteReview(Long review_id, Long board_id, UserDetailsImpl userDetails) {
+    public ResponseEntity<String> deleteReview(Long review_id, UserDetailsImpl userDetails) {
         Review review = reviewRepository.findById(review_id).orElse(null);
-        Board board = boardRepository.findById(board_id).orElse(null);
+        Board board = boardRepository.findByReviews(review).orElse(null);
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
 
         if (board == null) {

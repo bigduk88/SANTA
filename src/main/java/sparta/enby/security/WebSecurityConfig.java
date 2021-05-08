@@ -41,6 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
 
+        //Cors 설정
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(ImmutableList.of("*"));
         configuration.setAllowedMethods(ImmutableList.of("HEAD","GET","POST","PUT","DELETE","PATCH"));
@@ -52,6 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    //WebSecurity 설정부분
     protected void configure(HttpSecurity http) throws Exception{
         http.httpBasic().disable().headers().frameOptions().disable().and().csrf().disable();
         http.cors().configurationSource(corsConfigurationSource());
@@ -59,6 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/callback/**").permitAll()
                 .antMatchers("/oauth").permitAll()
+                //Jwt token으로 로그인 처리
                 .anyRequest().authenticated().and().addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
 }

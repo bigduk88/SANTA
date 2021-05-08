@@ -2,7 +2,7 @@ package sparta.enby.model;
 
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
-import sparta.enby.dto.BoardRequestDto;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class Board extends BaseEntity {
         board.getReviews().removeAll(this.reviews);
         board.getRegistrations().removeAll(this.registrations);
         this.account = null;
-        this.reviews = null;
-        this.registrations = null;
+        this.reviews.clear();
+        this.registrations.clear();
     }
 }
