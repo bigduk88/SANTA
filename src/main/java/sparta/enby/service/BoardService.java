@@ -53,11 +53,29 @@ public class BoardService {
                         board.getPeople_max(),
                         board.getContents(),
                         board.getLocation(),
-                        board.getMeetTime()
+                        board.getMeetTime(),
+                        board.getDeadlineStatus()
                 )
         ).collect(Collectors.toList());
+        toList.forEach(deadlineStatus -> this.updateDeadlineStatus(deadlineStatus));
         return ResponseEntity.ok().body(toList);
     }
+
+    @Transactional
+    public void updateDeadlineStatus(BoardResponseDto boardResponseDto){
+        Board board = boardRepository.findById(boardResponseDto.getId()).orElse(null);
+        if (board == null){
+            board.update(boardResponseDto.getBoard_imgUrl(),
+                    boardResponseDto.getTitle(),
+                    boardResponseDto.getContents(),
+                    boardResponseDto.getMeetTime(),
+                    boardResponseDto.getLocation(),
+                    boardResponseDto.getPeople_max(),
+                    boardResponseDto.getDeadlineStatus());
+            boardRepository.save(board);
+        }
+    }
+
 
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
@@ -75,6 +93,7 @@ public class BoardService {
                         board.getBoard_imgUrl(),
                         board.getPeople_current(),
                         board.getPeople_max(),
+                        board.getDeadlineStatus(),
                         //여기에 게시글에 달린 후기 리뷰를 ReviewResponseDto에 매핑
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(
@@ -120,7 +139,8 @@ public class BoardService {
                 board.getContents(),
                 board.getTitle(),
                 board.getLocation(),
-                board.getMeetTime()
+                board.getMeetTime(),
+                board.getDeadlineStatus()
         ));
         return toMap;
     }
@@ -142,7 +162,8 @@ public class BoardService {
                 .people_max(boardRequestDto.getPeople_max())
                 .location(boardRequestDto.getLocation())
                 .contents(boardRequestDto.getContents())
-                .board_imgUrl(board_imgUrl).build();
+                .board_imgUrl(board_imgUrl)
+                .deadlineStatus(false).build();
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
         return newBoard.getId();
@@ -202,7 +223,9 @@ public class BoardService {
                 people_max = board.getPeople_max();
             }
             people_max = boardRequestDto.getPeople_max();
-            board.update(board_imgUrl, title, contents, time, location, people_max);
+
+            Boolean deadlineStatus = boardRequestDto.getDeadlineStatus();
+            board.update(board_imgUrl, title, contents, time, location, people_max, deadlineStatus);
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
         }
     }
@@ -241,5 +264,14 @@ public class BoardService {
         boardRepository.deleteById(board_id);
         System.out.println("board deleted");
         return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
+    }
+
+    public ResponseEntity <String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account){
+        Board board = boardRepository.findById(board_id).orElse(null);
+        if (board == null){
+            return ResponseEntity.badRequest().body("해당 아이디의 게시글이 없습니다");
+        }
+        board.changeDeadlineStatus(changeDeadlineRequestDto);
+        return ResponseEntity.ok().body("성공적으로 마감상태가 변경되었습니다");
     }
 }

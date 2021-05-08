@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.enby.dto.BoardRequestDto;
 import sparta.enby.dto.BoardResponseDto;
+import sparta.enby.dto.ChangeDeadlineRequestDto;
 import sparta.enby.dto.RegisterRequestDto;
 import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.service.BoardService;
@@ -78,5 +79,10 @@ public class BoardController {
     @DeleteMapping("/board/mating/{board_id}")
     public ResponseEntity deleteBoard(@PathVariable Long board_id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return boardService.deleteBoard(board_id, userDetails.getAccount());
+    }
+
+    @PutMapping("/board/mating/{board_id}/deadline")
+    public ResponseEntity<String> clickFinish(@PathVariable Long board_id, @RequestBody ChangeDeadlineRequestDto changeDeadlineRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return boardService.clickFinish(board_id, changeDeadlineRequestDto,userDetails.getAccount());
     }
 }
