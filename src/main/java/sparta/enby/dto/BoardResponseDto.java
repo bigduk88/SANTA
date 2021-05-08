@@ -16,7 +16,6 @@ public class BoardResponseDto {
     private LocalDateTime meetTime;
     private Boolean deadlineStatus;
 
-
     public BoardResponseDto(Long id, String title, String board_imgUrl, int people_current, int people_max, String contents, String location, LocalDateTime meetTime, Boolean deadlineStatus) {
         this.id = id;
         this.title = title;

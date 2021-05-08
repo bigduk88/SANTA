@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +53,7 @@ public class BoardService {
                         board.getPeople_current(),
                         board.getPeople_max(),
                         board.getContents(),
+                        board.getTitle(),
                         board.getLocation(),
                         board.getMeetTime(),
                         board.getDeadlineStatus()
@@ -75,7 +77,6 @@ public class BoardService {
             boardRepository.save(board);
         }
     }
-
 
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
@@ -114,7 +115,8 @@ public class BoardService {
                                         registration.getAccount().getProfile_img(),
                                         registration.getKakao_id()
                                 )
-                        ).collect(Collectors.toList())
+                        ).collect(Collectors.toList()),
+                        board.getDeadlineStatus()
                 ))
                 .collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
@@ -167,16 +169,16 @@ public class BoardService {
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
         return newBoard.getId();
-    }
 
+    }
 
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
-            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
-        }
+//        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
+//            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
+//        }
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         } else {
@@ -226,6 +228,7 @@ public class BoardService {
 
             Boolean deadlineStatus = boardRequestDto.getDeadlineStatus();
             board.update(board_imgUrl, title, contents, time, location, people_max, deadlineStatus);
+
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
         }
     }

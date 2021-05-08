@@ -1,5 +1,6 @@
 package sparta.enby.model;
 
+import com.sun.istack.NotNull;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import sparta.enby.dto.ChangeDeadlineRequestDto;
@@ -51,12 +52,12 @@ public class Board extends BaseEntity {
     @Builder.Default
     List<Registration> registrations = new ArrayList<>();
 
-
     public void addAccount(Account account) {
         this.account = account;
     }
 
     public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location, int people_max, boolean deadlineStatus) {
+
         this.board_imgUrl = board_imgUrl;
         this.title = title;
         this.contents = contents;
@@ -65,7 +66,6 @@ public class Board extends BaseEntity {
         this.people_max = people_max;
         this.deadlineStatus = deadlineStatus;
     }
-
     public void deleteBoard(Board board) {
         board.getAccount().getBoards().remove(this);
         board.getReviews().removeAll(this.reviews);
@@ -77,5 +77,9 @@ public class Board extends BaseEntity {
 
     public void changeDeadlineStatus(Boolean b){
         this.deadlineStatus = b;
+    }
+
+    public void changeDeadlineStatus(ChangeDeadlineRequestDto changeDeadlineRequestDto) {
+        deadlineStatus = changeDeadlineRequestDto.getDeadlineStatus();
     }
 }
