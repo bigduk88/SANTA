@@ -63,7 +63,9 @@ public class ReviewService {
                 review.getTitle(),
                 review.getReview_imgUrl(),
                 review.getContents(),
-                review.getBoard().getId()
+                review.getBoard().getId(),
+                review.getAccount().getNickname(),
+                review.getAccount().getProfile_img()
         ));
         return toMap;
 

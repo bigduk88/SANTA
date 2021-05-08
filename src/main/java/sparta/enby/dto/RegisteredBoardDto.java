@@ -16,6 +16,8 @@ public class RegisteredBoardDto {
     private LocalDateTime createdAt;
     private int people_current;
     private int people_max;
+    private String nickname;
+    private String profile_Img;
 
     public RegisteredBoardDto(Long id, String title, String board_imgUrl, String location, LocalDateTime meetTime, int people_current, int people_max) {
         this.id = id;
@@ -26,5 +28,17 @@ public class RegisteredBoardDto {
         this.meetTime = meetTime;
         this.people_current = people_current;
         this.people_max = people_max;
+    }
+
+    public RegisteredBoardDto(Long id, String title, String board_imgUrl, String location, LocalDateTime meetTime, int people_current, int people_max, String nickname, String profile_img) {
+        this.id = id;
+        this.title = title;
+        this.board_imgUrl = board_imgUrl;
+        this.location = location;
+        this.meetTime = meetTime;
+        this.people_current = people_current;
+        this.people_max = people_max;
+        this.nickname = nickname;
+        this.profile_Img = profile_img;
     }
 }

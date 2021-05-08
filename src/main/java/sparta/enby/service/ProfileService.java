@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import sparta.enby.dto.AttendedBoardDto;
 import sparta.enby.dto.MyBoardResponseDto;
 import sparta.enby.dto.RegisteredBoardDto;
-import sparta.enby.model.Account;
 import sparta.enby.model.Board;
 import sparta.enby.model.Registration;
 import sparta.enby.repository.AccountRepository;
@@ -29,19 +28,15 @@ public class ProfileService {
     private final RegistrationRepository registrationRepository;
 
     public ResponseEntity<Object> getProfile(String name, UserDetailsImpl userDetails) {
-        Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
-        if (account == null) {
-            return null;
-        }
         List<Registration> registrations = registrationRepository.findAllByCreatedBy(name);
         List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrue();
         List<Object> toList = new ArrayList<>();
 
         //신청한 모임
         List<RegisteredBoardDto> registeredBoardList = new ArrayList<>();
-       //참가한 모임
+        //참가한 모임
         List<AttendedBoardDto> attendedBoardList = new ArrayList<>();
-       // 생성한 모임
+        // 생성한 모임
         List<MyBoardResponseDto> myboardList = new ArrayList<>();
 
         //신청한 모임 Mapping
@@ -55,7 +50,9 @@ public class ProfileService {
                             board.getLocation(),
                             board.getMeetTime(),
                             board.getPeople_current(),
-                            board.getPeople_max()
+                            board.getPeople_max(),
+                            board.getAccount().getNickname(),
+                            board.getAccount().getProfile_img()
                     )
             ).collect(Collectors.toList()));
         }

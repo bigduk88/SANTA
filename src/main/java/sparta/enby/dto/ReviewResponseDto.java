@@ -9,6 +9,8 @@ public class ReviewResponseDto {
     private String review_imgUrl;
     private String contents;
     private Long board_id;
+    private String nickname;
+    private String profile_Img;
 
     public ReviewResponseDto(Long review_id, String title, String review_imgUrl, String contents, Long board_id) {
         this.review_id = review_id;
@@ -19,4 +21,13 @@ public class ReviewResponseDto {
 
     }
 
+    public ReviewResponseDto(Long review_id, String title, String review_imgUrl, String contents, Long board_id, String nickname, String profile_img) {
+        this.review_id = review_id;
+        this.title = title;
+        this.review_imgUrl = review_imgUrl;
+        this.contents = contents;
+        this.board_id = board_id;
+        this.nickname = nickname;
+        this.profile_Img = profile_img;
+    }
 }
