@@ -39,15 +39,6 @@ public class Board extends BaseEntity {
 
     private Boolean deadlineStatus;
 
-    public Boolean getDeadlineStatus() {
-        if (this.deadlineStatus) {
-            return true;
-        } else {
-            LocalDateTime now = LocalDateTime.now();
-            return meetTime.compareTo(now) == -1 || meetTime.compareTo(now) == 0;
-        }
-    }
-
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
@@ -84,7 +75,7 @@ public class Board extends BaseEntity {
         this.registrations.clear();
     }
 
-    public void changeDeadlineStatus(ChangeDeadlineRequestDto changeDeadlineRequestDto){
-        this.deadlineStatus = changeDeadlineRequestDto.getDeadlineStatus();
+    public void changeDeadlineStatus(Boolean b){
+        this.deadlineStatus = b;
     }
 }

@@ -266,12 +266,14 @@ public class BoardService {
         return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity <String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account){
         Board board = boardRepository.findById(board_id).orElse(null);
         if (board == null){
             return ResponseEntity.badRequest().body("해당 아이디의 게시글이 없습니다");
         }
-        board.changeDeadlineStatus(changeDeadlineRequestDto);
+        Boolean b = changeDeadlineRequestDto.getDeadlineStatus();
+        board.changeDeadlineStatus(b);
         return ResponseEntity.ok().body("성공적으로 마감상태가 변경되었습니다");
     }
 }
