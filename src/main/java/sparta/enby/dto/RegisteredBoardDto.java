@@ -19,19 +19,9 @@ public class RegisteredBoardDto {
     private String nickname;
     private String profile_Img;
 
-    public RegisteredBoardDto(Long id, String title, String board_imgUrl, String location, LocalDateTime meetTime, int people_current, int people_max) {
-        this.id = id;
-        this.board_name = "신청한 모임";
-        this.title = title;
-        this.board_imgUrl = board_imgUrl;
-        this.location = location;
-        this.meetTime = meetTime;
-        this.people_current = people_current;
-        this.people_max = people_max;
-    }
-
     public RegisteredBoardDto(Long id, String title, String board_imgUrl, String location, LocalDateTime meetTime, int people_current, int people_max, String nickname, String profile_img) {
         this.id = id;
+        this.board_name = "신청한 모임";
         this.title = title;
         this.board_imgUrl = board_imgUrl;
         this.location = location;

@@ -29,7 +29,7 @@ public class ProfileService {
 
     public ResponseEntity<Object> getProfile(String name, UserDetailsImpl userDetails) {
         List<Registration> registrations = registrationRepository.findAllByCreatedBy(name);
-        List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrue();
+        List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrueAndBoardDeadlineStatus(true);
         List<Object> toList = new ArrayList<>();
 
         //신청한 모임
@@ -39,7 +39,7 @@ public class ProfileService {
         // 생성한 모임
         List<MyBoardResponseDto> myboardList = new ArrayList<>();
 
-        //신청한 모임 Mapping
+        //신청한 모임 Mapping (참여 신청만 한거)
         for (Registration registration : registrations) {
             List<Board> boardList = boardRepository.findAllByRegistrations(registration);
             registeredBoardList.addAll(boardList.stream().map(
@@ -56,6 +56,7 @@ public class ProfileService {
                     )
             ).collect(Collectors.toList()));
         }
+        // 참가 허락된 모임
         for (Registration registration : acceptedList) {
             List<Board> attendedBoard = boardRepository.findAllByRegistrations(registration);
             attendedBoardList.addAll(attendedBoard.stream().map(
@@ -70,6 +71,8 @@ public class ProfileService {
                     )
             ).collect(Collectors.toList()));
         }
+
+        // 내가 생성한 게시글
         List<Board> myboards = boardRepository.findAllByCreatedBy(name);
         myboardList = myboards.stream().map(
                 board -> new MyBoardResponseDto(
