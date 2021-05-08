@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,7 +17,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sparta.enby.model.Account;
 import sparta.enby.model.AuthorizationKakao;
-import sparta.enby.model.UserRole;
 import sparta.enby.repository.AccountRepository;
 
 import javax.transaction.Transactional;
@@ -37,8 +34,8 @@ public class OAuth2Kakao {
     //카카오 RESTAPI Key
     private final String KakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
     //카카오 RedirectURL
-//    private final String frontendRedirectUrl = "http://localhost:3000";
-    private final String frontendRedirectUrl = "http://localhost:8080";
+    private final String frontendRedirectUrl = "http://localhost:3000";
+//    private final String frontendRedirectUrl = "http://localhost:8080";
 
     // Kakao Authorization code
     public AuthorizationKakao callTokenApi(String code) {
@@ -57,9 +54,9 @@ public class OAuth2Kakao {
         params.add("client_id", KakaoOauth2ClientId);
         //RedirectUri 생성
         //Frontend
-//        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
+        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
         //Backend
-        params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
+//        params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
         //인가 코드
         params.add("code", code);
 

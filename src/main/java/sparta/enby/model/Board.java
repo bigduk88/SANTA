@@ -34,25 +34,17 @@ public class Board extends BaseEntity {
 
     private String board_imgUrl;
 
+    private int people_current;
+
     private int people_max;
 
     private Boolean deadlineStatus;
-
-    public Boolean getDeadlineStatus() {
-        if (this.deadlineStatus) {
-            return true;
-        } else {
-            //현재 날짜가 밋팅타임을 넘겼으면 return true
-            LocalDateTime now = LocalDateTime.now();
-            return meetTime.compareTo(now) == -1 || meetTime.compareTo(now) == 0;
-        }
-    }
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @OneToMany (mappedBy = "board")
+    @OneToMany(mappedBy = "board")
     @Builder.Default
     List<Review> reviews = new ArrayList<>();
 
@@ -64,22 +56,27 @@ public class Board extends BaseEntity {
         this.account = account;
     }
 
-    public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location, Boolean deadlineStatus){
+    public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location, int people_max, boolean deadlineStatus) {
+
         this.board_imgUrl = board_imgUrl;
         this.title = title;
         this.contents = contents;
         this.meetTime = meetTime;
         this.location = location;
+        this.people_max = people_max;
         this.deadlineStatus = deadlineStatus;
     }
-
-    public void deleteBoard(Board board){
+    public void deleteBoard(Board board) {
         board.getAccount().getBoards().remove(this);
         board.getReviews().removeAll(this.reviews);
         board.getRegistrations().removeAll(this.registrations);
         this.account = null;
-        this.reviews = null;
-        this.registrations = null;
+        this.reviews.clear();
+        this.registrations.clear();
+    }
+
+    public void changeDeadlineStatus(Boolean b){
+        this.deadlineStatus = b;
     }
 
     public void changeDeadlineStatus(ChangeDeadlineRequestDto changeDeadlineRequestDto) {
