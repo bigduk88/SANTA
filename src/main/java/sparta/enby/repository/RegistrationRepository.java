@@ -10,7 +10,7 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     void deleteAllByBoard(Board board);
     Registration findAllByBoardIdAndCreatedBy(Long board_id, String name);
     List<Registration> findAllByCreatedBy(String name);
-    List<Registration>findAllByAcceptedTrueAndBoardDeadlineStatus(Boolean x);
+    List<Registration>findAllByAcceptedTrueAndBoardDeadlineStatusAndCreatedBy(Boolean x, String name);
     List<Registration> findAllByBoardId(Long board_id);
     boolean existsByBoardId(Long board_id);
 }

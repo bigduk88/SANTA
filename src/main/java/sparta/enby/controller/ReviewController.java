@@ -30,6 +30,7 @@ public class ReviewController {
         return reviewService.getReviewPage(page, size);
     }
 
+    //후기 상세 페이지 가져오기
     @GetMapping("/board/mating/review/{review_id}")
     public List<ReviewResponseDto> getDetailReview(@PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return reviewService.getDetailReview(review_id, userDetails);

@@ -29,7 +29,7 @@ public class ProfileService {
 
     public ResponseEntity<Object> getProfile(String name, UserDetailsImpl userDetails) {
         List<Registration> registrations = registrationRepository.findAllByCreatedBy(name);
-        List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrueAndBoardDeadlineStatus(true);
+        List<Registration> acceptedList = registrationRepository.findAllByAcceptedTrueAndBoardDeadlineStatusAndCreatedBy(true, name);
         List<Object> toList = new ArrayList<>();
 
         //신청한 모임

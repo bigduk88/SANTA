@@ -14,6 +14,7 @@ import sparta.enby.service.ProfileService;
 public class ProfileController {
     private final ProfileService profileService;
 
+    //사용자 프로필
     @GetMapping("/mypage/{name}")
     public ResponseEntity<Object> getProfile(@PathVariable String name, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return profileService.getProfile(name, userDetails);

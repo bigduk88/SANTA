@@ -26,7 +26,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,13 +52,11 @@ public class BoardService {
                         board.getPeople_current(),
                         board.getPeople_max(),
                         board.getContents(),
-                        board.getTitle(),
                         board.getLocation(),
                         board.getMeetTime(),
                         board.getDeadlineStatus()
                 )
         ).collect(Collectors.toList());
-        toList.forEach(deadlineStatus -> this.updateDeadlineStatus(deadlineStatus));
         return ResponseEntity.ok().body(toList);
     }
 
@@ -115,8 +112,7 @@ public class BoardService {
                                         registration.getAccount().getProfile_img(),
                                         registration.getKakao_id()
                                 )
-                        ).collect(Collectors.toList()),
-                        board.getDeadlineStatus()
+                        ).collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
@@ -176,9 +172,6 @@ public class BoardService {
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
-//        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
-//            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
-//        }
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         } else {
@@ -234,7 +227,6 @@ public class BoardService {
     }
 
     //게시글 삭제
-    //Fixme: NullPointerException error
     @Transactional
     public ResponseEntity<String> deleteBoard(Long board_id, Account account) {
         Board board = boardRepository.findById(board_id).orElse(null);

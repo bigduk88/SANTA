@@ -22,6 +22,7 @@ public class BoardController {
 
     private final BoardService boardService;
     private final RegistrationService registrationService;
+
     //게시글 리스트
     @GetMapping("/main/board")
     public ResponseEntity getBoardList() {
@@ -43,9 +44,6 @@ public class BoardController {
     //게시글 적기
     @PostMapping("/board/mating")
     public ResponseEntity writeBoard(@ModelAttribute BoardRequestDto boardRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
-//        if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
-//            return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
-//        }
         if (boardRequestDto.getContents() == null || boardRequestDto.getContents().isEmpty()) {
             return new ResponseEntity<>("내용을 기입해주세요", HttpStatus.BAD_REQUEST);
         }
@@ -61,11 +59,14 @@ public class BoardController {
         if (boardRequestDto.getPeople_max() != 4) {
             boardRequestDto.setPeople_max(4);
         }
+        //개시글 작성
         Long board_id = boardService.writeBoard(boardRequestDto, userDetails);
+        //게시글 생성시 자동으로 주최자를 참여 시키기 위한 부분
         RegisterRequestDto registerRequestDto = new RegisterRequestDto();
         registerRequestDto.setContents("a");
         registerRequestDto.setAccepted(true);
         registerRequestDto.setKakao_id("a");
+        //주최자 참여하기
         return registrationService.makeRegistration(registerRequestDto, board_id, userDetails);
     }
 
@@ -81,8 +82,9 @@ public class BoardController {
         return boardService.deleteBoard(board_id, userDetails.getAccount());
     }
 
+    //마감하기 버튼
     @PutMapping("/board/mating/{board_id}/deadline")
-    public ResponseEntity<String> clickFinish(@PathVariable Long board_id, @RequestBody ChangeDeadlineRequestDto changeDeadlineRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return boardService.clickFinish(board_id, changeDeadlineRequestDto,userDetails.getAccount());
+    public ResponseEntity<String> clickFinish(@PathVariable Long board_id, @RequestBody ChangeDeadlineRequestDto changeDeadlineRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return boardService.clickFinish(board_id, changeDeadlineRequestDto, userDetails.getAccount());
     }
 }
