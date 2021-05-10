@@ -9,5 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReviewRequestDto {
 
     private MultipartFile reviewImg;
+    private String title;
     private String contents;
 }

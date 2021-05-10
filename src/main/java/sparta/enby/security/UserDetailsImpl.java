@@ -1,13 +1,10 @@
 package sparta.enby.security;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import sparta.enby.model.Account;
-import sparta.enby.model.UserRole;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 

@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
-
 @Getter
 @Setter
 public class BoardRequestDto {
@@ -16,4 +14,5 @@ public class BoardRequestDto {
     private String location;
     private String meetTime;
     private int people_max;
+    private Boolean deadlineStatus;
 }

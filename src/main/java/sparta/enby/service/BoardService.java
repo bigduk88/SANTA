@@ -34,28 +34,50 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final S3Service uploader;
     private final FileUploaderService fileUploaderService;
-    private AccountRepository accountRepository;
-    private ReviewRepository reviewRepository;
-    private RegistrationRepository registrationRepository;
+    private final AccountRepository accountRepository;
+    private final ReviewRepository reviewRepository;
+    private final RegistrationRepository registrationRepository;
+    private final RegistrationService registrationService;
 
 
-    public ResponseEntity getBoardList() {
+    public ResponseEntity<List<BoardResponseDto>> getBoardList() {
+        // 모든 게시글들을 List로 받아서
         List<Board> boards = boardRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        // List에 있는 객체들을 BoardResponseDto에 명시된 객체들에 mapping하기 위해서 stream을 통해서 목록들을 읽어온 다음 list로 형변환
         List<BoardResponseDto> toList = boards.stream().map(
                 board -> new BoardResponseDto(
                         board.getId(),
                         board.getTitle(),
+                        board.getBoard_imgUrl(),
+                        board.getPeople_current(),
+                        board.getPeople_max(),
                         board.getContents(),
                         board.getLocation(),
-                        board.getMeetTime()
+                        board.getMeetTime(),
+                        board.getDeadlineStatus()
                 )
         ).collect(Collectors.toList());
         return ResponseEntity.ok().body(toList);
     }
 
+    @Transactional
+    public void updateDeadlineStatus(BoardResponseDto boardResponseDto){
+        Board board = boardRepository.findById(boardResponseDto.getId()).orElse(null);
+        if (board == null){
+            board.update(boardResponseDto.getBoard_imgUrl(),
+                    boardResponseDto.getTitle(),
+                    boardResponseDto.getContents(),
+                    boardResponseDto.getMeetTime(),
+                    boardResponseDto.getLocation(),
+                    boardResponseDto.getPeople_max(),
+                    boardResponseDto.getDeadlineStatus());
+            boardRepository.save(board);
+        }
+    }
+
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
-
+        // 해당 게사글 id로 찾은 List들을 stream으로 읽어와서 BoardDetailResponseDto에 map
         List<Board> boards = boardRepository.findAllById(board_id);
         List<BoardDetailResponseDto> toList = boards.stream().map(
                 board -> new BoardDetailResponseDto(
@@ -64,16 +86,23 @@ public class BoardService {
                         board.getTitle(),
                         board.getContents(),
                         board.getMeetTime(),
+                        board.getCreatedAt(),
                         board.getLocation(),
                         board.getBoard_imgUrl(),
+                        board.getPeople_current(),
+                        board.getPeople_max(),
+                        board.getDeadlineStatus(),
+                        //여기에 게시글에 달린 후기 리뷰를 ReviewResponseDto에 매핑
                         board.getReviews().stream().map(
                                 review -> new ReviewResponseDto(
                                         review.getId(),
+                                        review.getTitle(),
                                         review.getReview_imgUrl(),
                                         review.getContents(),
                                         review.getBoard().getId()
                                 )
                         ).collect(Collectors.toList()),
+                        // 게시글에 참여 신청한 내역을 RegistrationResponseDto에 매핑
                         board.getRegistrations().stream().map(
                                 registration -> new RegistrationResponseDto(
                                         registration.getId(),
@@ -108,32 +137,21 @@ public class BoardService {
                 board.getContents(),
                 board.getTitle(),
                 board.getLocation(),
-                board.getMeetTime()
+                board.getMeetTime(),
+                board.getDeadlineStatus()
         ));
         return toMap;
     }
 
     // 게시글 쓰기
     @Transactional
-    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) throws IOException {
-//    public ResponseEntity<String> writeBoard(BoardRequestDto boardRequestDto, Account account) throws IOException {
+    public Long writeBoard(BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) throws IOException {
+        String board_imgUrl = null;
         if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
-            return new ResponseEntity<>("이미지를 올려주세요", HttpStatus.BAD_REQUEST);
+            board_imgUrl = "https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png";
+        } else {
+            board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
         }
-        if (boardRequestDto.getContents() == null || boardRequestDto.getContents().isEmpty()) {
-            return new ResponseEntity<>("내용을 기입해주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getLocation() == null || boardRequestDto.getLocation().isEmpty()) {
-            return new ResponseEntity<>("만날 장소를 올려주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getTitle() == null || boardRequestDto.getTitle().isEmpty()) {
-            return new ResponseEntity<>("제목을 입력해 주세요", HttpStatus.BAD_REQUEST);
-        }
-        if (boardRequestDto.getMeetTime() == null || boardRequestDto.getMeetTime().isEmpty()) {
-            return new ResponseEntity<>("모임 시간을 설정해주세요", HttpStatus.BAD_REQUEST);
-        }
-
-        String board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
         String time = boardRequestDto.getMeetTime();
         LocalDateTime meeting_time = LocalDateTime.parse(time, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         Board board = Board.builder()
@@ -142,20 +160,18 @@ public class BoardService {
                 .people_max(boardRequestDto.getPeople_max())
                 .location(boardRequestDto.getLocation())
                 .contents(boardRequestDto.getContents())
-                .board_imgUrl(board_imgUrl).build();
+                .board_imgUrl(board_imgUrl)
+                .deadlineStatus(false).build();
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
-        return new ResponseEntity<>("성공적으로 저장 완료하였습니다", HttpStatus.OK);
-    }
+        return newBoard.getId();
 
+    }
 
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        if (!board.getAccount().getNickname().equals(userDetails.getUsername())) {
-            return new ResponseEntity<>("다른 사용자의 게시글을 수정하실 수 없습니다", HttpStatus.BAD_REQUEST);
-        }
         if (board == null) {
             return new ResponseEntity<>("없는 게시판입니다", HttpStatus.BAD_REQUEST);
         } else {
@@ -190,17 +206,25 @@ public class BoardService {
 
             String location = null;
             if (boardRequestDto.getLocation() == null || boardRequestDto.getLocation().isEmpty()) {
-//            if (boardRequestDto.getLocation().isEmpty() || boardRequestDto.getLocation() == null) {
                 location = board.getLocation();
             } else {
                 location = boardRequestDto.getLocation();
             }
+            int people_max = 0;
+            if (boardRequestDto.getPeople_max() > 5) {
+                return ResponseEntity.badRequest().body("최대인원은 4인이하 입니다");
+            }
+            if (boardRequestDto.getPeople_max() == 0) {
+                people_max = board.getPeople_max();
+            }
+            people_max = boardRequestDto.getPeople_max();
 
-            board.update(board_imgUrl, title, contents, time, location);
+            Boolean deadlineStatus = boardRequestDto.getDeadlineStatus();
+            board.update(board_imgUrl, title, contents, time, location, people_max, deadlineStatus);
+
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
         }
     }
-
 
     //게시글 삭제
     @Transactional
@@ -212,12 +236,21 @@ public class BoardService {
         if (!board.getAccount().getNickname().equals(account.getNickname())) {
             return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다", HttpStatus.BAD_REQUEST);
         }
-        if (board.getReviews() != null && board.getRegistrations() != null){
-            List<Review>reviews = board.getReviews();
-            for (Review review : reviews) {
-                fileUploaderService.removeImage(review.getReview_imgUrl());
-                reviewRepository.deleteAllByBoard(board);
-                System.out.println("review deleted");
+        if (!board.getReviews().isEmpty()) {
+            System.out.println(board.getReviews());
+            if (reviewRepository.existsByBoard(board)) {
+                List<Review> reviews = reviewRepository.findAllByBoard(board);
+                for (Review review : reviews) {
+                    fileUploaderService.removeImage(review.getReview_imgUrl());
+                    System.out.println("review delete start");
+                    reviewRepository.deleteAllByBoard(board);
+                    System.out.println("review deleted");
+                }
+            }
+        }
+        if (!board.getRegistrations().isEmpty()) {
+            if (registrationRepository.existsByBoardId(board_id)) {
+                System.out.println("registration delete start");
                 registrationRepository.deleteAllByBoard(board);
                 System.out.println("register deleted");
             }
@@ -225,6 +258,17 @@ public class BoardService {
         board.deleteBoard(board);
         boardRepository.deleteById(board_id);
         System.out.println("board deleted");
-        return new ResponseEntity<>("성공적으로 삭제 하였습니다",HttpStatus.OK);
-}
+        return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
+    }
+
+    @Transactional
+    public ResponseEntity <String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account){
+        Board board = boardRepository.findById(board_id).orElse(null);
+        if (board == null){
+            return ResponseEntity.badRequest().body("해당 아이디의 게시글이 없습니다");
+        }
+        Boolean b = changeDeadlineRequestDto.getDeadlineStatus();
+        board.changeDeadlineStatus(b);
+        return ResponseEntity.ok().body("성공적으로 마감상태가 변경되었습니다");
+    }
 }

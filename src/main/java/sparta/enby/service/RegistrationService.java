@@ -40,7 +40,16 @@ public class RegistrationService {
                 .account(account)
                 .accepted(false)
                 .build();
-        registrationRepository.save(newRegistration);
+        int i = board.getPeople_current();
+        if (board.getPeople_current() >= board.getPeople_max()){
+            return ResponseEntity.badRequest().body("모집 인원이 다 찼습니다.");
+        }
+        else{
+            i = i + 1;
+            board.setPeople_current(i);
+            registrationRepository.save(newRegistration);
+            System.out.println("저장완료");
+        }
         newRegistration.addBoardAndAccount(board, account);
         return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " + newRegistration.getId(), HttpStatus.OK);
     }
@@ -72,10 +81,17 @@ public class RegistrationService {
         }
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
         if (board.getCreatedBy().equals(account.getNickname())) {
+            int i = board.getPeople_current();
+            System.out.println(i);
+            i = i - 1;
+            board.setPeople_current(i);
             registrationRepository.deleteById(register_id);
             return ResponseEntity.ok().body("요청을 거절 하였습니다");
         }
         if (registration.getCreatedBy().equals(account.getNickname())){
+            int i = board.getPeople_current();
+            i = i - 1;
+            board.setPeople_current(i);
             registrationRepository.deleteById(register_id);
             return ResponseEntity.ok().body("요청을 취소 하였습니다");
         }
