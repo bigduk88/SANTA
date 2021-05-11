@@ -1,5 +1,6 @@
 package sparta.enby.repository;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import sparta.enby.model.Board;
 import sparta.enby.model.Review;
@@ -11,4 +12,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllById(Long review_id);
     List<Review> findAllByBoard(Board board);
     Boolean existsByBoard(Board board);
+    List<Review> findAllByTitleContaining(String keyword);
+    List<Review> findAllByContentsContaining(String keyword);
 }

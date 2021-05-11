@@ -57,7 +57,6 @@ public class Board extends BaseEntity {
     }
 
     public void update(String board_imgUrl, String title, String contents, LocalDateTime meetTime, String location, int people_max, boolean deadlineStatus) {
-
         this.board_imgUrl = board_imgUrl;
         this.title = title;
         this.contents = contents;
@@ -77,9 +76,5 @@ public class Board extends BaseEntity {
 
     public void changeDeadlineStatus(Boolean b){
         this.deadlineStatus = b;
-    }
-
-    public void changeDeadlineStatus(ChangeDeadlineRequestDto changeDeadlineRequestDto) {
-        deadlineStatus = changeDeadlineRequestDto.getDeadlineStatus();
     }
 }

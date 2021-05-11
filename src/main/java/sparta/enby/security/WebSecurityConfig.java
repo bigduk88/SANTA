@@ -61,6 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/callback/**").permitAll()
                 .antMatchers("/oauth").permitAll()
+                .antMatchers("/main/*").permitAll()
                 //Jwt token으로 로그인 처리
                 .anyRequest().authenticated().and().addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }

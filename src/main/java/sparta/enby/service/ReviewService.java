@@ -72,9 +72,9 @@ public class ReviewService {
 
     }
 
-    public List<ReviewResponseDto> getDetailReview(Long review_id, UserDetailsImpl userDetails){
+    public List<ReviewResponseDto> getDetailReview(Long review_id, UserDetailsImpl userDetails) {
         List<Review> reviews = reviewRepository.findAllById(review_id);
-        List<ReviewResponseDto>toList = reviews.stream().map(
+        List<ReviewResponseDto> toList = reviews.stream().map(
                 review -> new ReviewResponseDto(
                         review.getId(),
                         review.getTitle(),
@@ -88,8 +88,6 @@ public class ReviewService {
         ).collect(Collectors.toList());
         return toList;
     }
-
-
 
 
     //게시글 작성
@@ -127,22 +125,27 @@ public class ReviewService {
         if (review.getAccount() != account) {
             return ResponseEntity.badRequest().body("다른 사용자 후기를 수정하실 수 없습니다");
         }
-        String review_imgUrl = null;
-        String contents = null;
-        if (reviewRequestDto.getReviewImg() == null && reviewRequestDto.getContents() == null) {
-            return ResponseEntity.badRequest().body("수정하실 내용또는 사진을 올려주세요");
+        String title;
+        if (reviewRequestDto.getTitle() == null || reviewRequestDto.getTitle().isEmpty()){
+            title = review.getTitle();
+        }else {
+            title = reviewRequestDto.getTitle();
         }
+        String contents;
         if (reviewRequestDto.getContents() == null || reviewRequestDto.getContents().isEmpty()) {
             contents = review.getContents();
-            if (reviewRequestDto.getReviewImg() == null || reviewRequestDto.getReviewImg().isEmpty()) {
-                review_imgUrl = review.getReview_imgUrl();
-            } else {
-                fileUploaderService.removeImage(review.getReview_imgUrl());
-                review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
-                review.editReview(contents, review_imgUrl);
-            }
+        }else {
+            contents = reviewRequestDto.getContents();
         }
-
+        String review_imgUrl;
+        if (reviewRequestDto.getReviewImg() == null || reviewRequestDto.getReviewImg().isEmpty()) {
+            review_imgUrl = review.getReview_imgUrl();
+        }
+        else {
+            fileUploaderService.removeImage(review.getReview_imgUrl());
+            review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
+        }
+        review.editReview(title, contents, review_imgUrl);
         return ResponseEntity.ok().body("수정 완료하였습니다");
     }
 

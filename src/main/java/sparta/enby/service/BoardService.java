@@ -241,8 +241,10 @@ public class BoardService {
             if (reviewRepository.existsByBoard(board)) {
                 List<Review> reviews = reviewRepository.findAllByBoard(board);
                 for (Review review : reviews) {
-                    fileUploaderService.removeImage(review.getReview_imgUrl());
-                    System.out.println("review delete start");
+                    if (!review.getReview_imgUrl().equals("https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png")) {
+                        fileUploaderService.removeImage(review.getReview_imgUrl());
+                        System.out.println("review delete start");
+                    }
                     reviewRepository.deleteAllByBoard(board);
                     System.out.println("review deleted");
                 }
