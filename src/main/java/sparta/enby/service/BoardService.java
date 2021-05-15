@@ -60,21 +60,6 @@ public class BoardService {
         return ResponseEntity.ok().body(toList);
     }
 
-    @Transactional
-    public void updateDeadlineStatus(BoardResponseDto boardResponseDto){
-        Board board = boardRepository.findById(boardResponseDto.getId()).orElse(null);
-        if (board == null){
-            board.update(boardResponseDto.getBoard_imgUrl(),
-                    boardResponseDto.getTitle(),
-                    boardResponseDto.getContents(),
-                    boardResponseDto.getMeetTime(),
-                    boardResponseDto.getLocation(),
-                    boardResponseDto.getPeople_max(),
-                    boardResponseDto.getDeadlineStatus());
-            boardRepository.save(board);
-        }
-    }
-
     //게시글 상세 페이지
     public ResponseEntity getDetailBoard(Long board_id, UserDetailsImpl userDetails) {
         // 해당 게사글 id로 찾은 List들을 stream으로 읽어와서 BoardDetailResponseDto에 map
@@ -99,7 +84,9 @@ public class BoardService {
                                         review.getTitle(),
                                         review.getReview_imgUrl(),
                                         review.getContents(),
-                                        review.getBoard().getId()
+                                        review.getBoard().getId(),
+                                        review.getAccount().getNickname(),
+                                        review.getAccount().getProfile_img()
                                 )
                         ).collect(Collectors.toList()),
                         // 게시글에 참여 신청한 내역을 RegistrationResponseDto에 매핑
@@ -179,7 +166,9 @@ public class BoardService {
             if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
                 board_imgUrl = board.getBoard_imgUrl();
             } else {
-                fileUploaderService.removeImage(board.getBoard_imgUrl());
+                if (!board.getBoard_imgUrl().equals("https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png")) {
+                    fileUploaderService.removeImage(board.getBoard_imgUrl());
+                }
                 board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
             }
 
@@ -264,9 +253,9 @@ public class BoardService {
     }
 
     @Transactional
-    public ResponseEntity <String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account){
+    public ResponseEntity<String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        if (board == null){
+        if (board == null) {
             return ResponseEntity.badRequest().body("해당 아이디의 게시글이 없습니다");
         }
         Boolean b = changeDeadlineRequestDto.getDeadlineStatus();

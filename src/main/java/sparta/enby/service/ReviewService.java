@@ -35,7 +35,7 @@ public class ReviewService {
     private final AccountRepository accountRepository;
 
     //게시글 가져가기
-    public ResponseEntity getReviewList() {
+    public ResponseEntity <List <ReviewResponseDto> > getReviewList() {
         List<Review> reviews = reviewRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<ReviewResponseDto> toList = reviews.stream().map(
                 review -> new ReviewResponseDto(
@@ -58,7 +58,7 @@ public class ReviewService {
         if (reviewPage.isEmpty()) {
             return null;
         }
-        Page<ReviewResponseDto> toMap = reviewPage.map(review -> new ReviewResponseDto(
+        return reviewPage.map(review -> new ReviewResponseDto(
                 review.getId(),
                 review.getTitle(),
                 review.getReview_imgUrl(),
@@ -68,13 +68,12 @@ public class ReviewService {
                 review.getAccount().getNickname(),
                 review.getAccount().getProfile_img()
         ));
-        return toMap;
 
     }
 
     public List<ReviewResponseDto> getDetailReview(Long review_id, UserDetailsImpl userDetails) {
         List<Review> reviews = reviewRepository.findAllById(review_id);
-        List<ReviewResponseDto> toList = reviews.stream().map(
+        return reviews.stream().map(
                 review -> new ReviewResponseDto(
                         review.getId(),
                         review.getTitle(),
@@ -86,7 +85,6 @@ public class ReviewService {
                         review.getAccount().getProfile_img()
                 )
         ).collect(Collectors.toList());
-        return toList;
     }
 
 
@@ -107,12 +105,13 @@ public class ReviewService {
                 .account(account)
                 .build();
         Review newReview = reviewRepository.save(review);
+        assert account != null;
         newReview.addBoardAndAccount(board, account);
         return new ResponseEntity<>("성공적으로 리뷰를 등록하였습니다", HttpStatus.OK);
     }
 
     @Transactional
-    public ResponseEntity editReview(ReviewRequestDto reviewRequestDto, Long board_id, Long review_id, UserDetailsImpl userDetails) {
+    public ResponseEntity <String> editReview(ReviewRequestDto reviewRequestDto, Long board_id, Long review_id, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
         if (board == null) {
             return ResponseEntity.badRequest().body("없는 게시글입니다");

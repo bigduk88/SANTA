@@ -3,6 +3,7 @@ package sparta.enby.security.kakao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import sparta.enby.model.Account;
 import sparta.enby.model.AuthorizationKakao;
 import sparta.enby.repository.AccountRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.Collections;
 
@@ -31,13 +33,9 @@ public class OAuth2Kakao {
     private final ObjectMapper objectMapper;
     private final AccountRepository accountRepository;
 
-    //카카오 RESTAPI Key
-    private final String KakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
-    //카카오 RedirectURL
-    private final String frontendRedirectUrl = "http://localhost:3000";
-//    private final String frontendRedirectUrl = "http://localhost:8080";
+
     // Kakao Authorization code
-    public AuthorizationKakao callTokenApi(String code) {
+    public AuthorizationKakao callTokenApi(String code, String URL) {
         String grantType = "authorization_code";
 
         HttpHeaders headers = new HttpHeaders();
@@ -50,12 +48,18 @@ public class OAuth2Kakao {
         //사용자 정보를 가져올때 필요한 access_token을 요청
         params.add("grant_type", grantType);
         //RestApiKey
-        params.add("client_id", KakaoOauth2ClientId);
-        //RedirectUri 생성
-        //Frontend
-        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
-//        Backend
-//        params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
+        //카카오 RESTAPI Key
+        String kakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
+        params.add("client_id", kakaoOauth2ClientId);
+        if (URL.contains("http://localhost:8080")) {
+            params.add("redirect_uri", "http://localhost:8080/callback/kakao");
+        }
+        if (URL.contains("http://localhost:3000")) {
+            params.add("redirect_uri", "http://localhost:3000/oauth");
+        }
+        if (URL.contains("http://enby.s3-website.ap-northeast-2.amazonaws.com")) {
+            params.add("redirect_uri", "http://enby.s3-website.ap-northeast-2.amazonaws.com/oauth");
+        }
         //인가 코드
         params.add("code", code);
 
