@@ -69,7 +69,10 @@ public class SearchService {
                         review.getTitle(),
                         review.getReview_imgUrl(),
                         review.getContents(),
-                        review.getBoard().getId()
+                        review.getBoard().getId(),
+                        review.getCreatedAt(),
+                        review.getAccount().getNickname(),
+                        review.getAccount().getProfile_img()
                 )
         ).collect(Collectors.toList());
         List<ReviewResponseDto> searchReviewContent = reviewContent.stream().map(
@@ -78,7 +81,10 @@ public class SearchService {
                         review.getTitle(),
                         review.getReview_imgUrl(),
                         review.getContents(),
-                        review.getBoard().getId()
+                        review.getBoard().getId(),
+                        review.getCreatedAt(),
+                        review.getAccount().getNickname(),
+                        review.getAccount().getProfile_img()
                 )
         ).collect(Collectors.toList());
         Set<ReviewResponseDto> toset = Stream.concat(searchReviewTitle.stream(),searchReviewContent.stream()).collect(Collectors.toSet());

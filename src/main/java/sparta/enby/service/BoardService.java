@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import sparta.enby.dto.*;
 import sparta.enby.model.Account;
 import sparta.enby.model.Board;
+import sparta.enby.model.Registration;
 import sparta.enby.model.Review;
 import sparta.enby.repository.AccountRepository;
 import sparta.enby.repository.BoardRepository;
@@ -23,6 +24,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +157,7 @@ public class BoardService {
 
     }
 
+    //Fixme:수정오류
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
@@ -200,15 +203,24 @@ public class BoardService {
                 location = boardRequestDto.getLocation();
             }
             int people_max = 0;
+
             if (boardRequestDto.getPeople_max() > 5) {
-                return ResponseEntity.badRequest().body("최대인원은 4인이하 입니다");
+                people_max = 4;
+            }
+            if (boardRequestDto.getPeople_max() < 0) {
+                people_max = 0;
             }
             if (boardRequestDto.getPeople_max() == 0) {
                 people_max = board.getPeople_max();
             }
-            people_max = boardRequestDto.getPeople_max();
 
-            Boolean deadlineStatus = boardRequestDto.getDeadlineStatus();
+            Boolean deadlineStatus = false;
+            if (boardRequestDto.getDeadlineStatus() == null) {
+                deadlineStatus = board.getDeadlineStatus();
+            } else {
+                deadlineStatus = boardRequestDto.getDeadlineStatus();
+            }
+
             board.update(board_imgUrl, title, contents, time, location, people_max, deadlineStatus);
 
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
@@ -262,4 +274,36 @@ public class BoardService {
         board.changeDeadlineStatus(b);
         return ResponseEntity.ok().body("성공적으로 마감상태가 변경되었습니다");
     }
+
+    public ResponseEntity<List<AttendedBoardDto>> getBoardWithoutReview(UserDetailsImpl userDetails) {
+        List<Board> boardLists = new ArrayList<>();
+        List<Board> boardwithnoreview = new ArrayList<>();
+        List<AttendedBoardDto> attendedBoardList = new ArrayList<>();
+        List<Review> reviewLists = new ArrayList<>();
+        List<Registration> registrations = registrationRepository.findAllByAcceptedTrueAndCreatedBy(userDetails.getUsername());
+
+        for (Registration registration : registrations) {
+            boardLists.addAll(boardRepository.findAllByRegistrations(registration));
+        }
+        for (Board board : boardLists){
+            reviewLists = reviewRepository.findAllByBoardAndCreatedBy(board,userDetails.getUsername());
+            if (reviewLists.isEmpty() || reviewLists == null){
+                boardwithnoreview.add(board);
+            }
+        }
+        attendedBoardList=boardwithnoreview.stream().map(
+                board -> new AttendedBoardDto(
+                        board.getId(),
+                        board.getTitle(),
+                        board.getBoard_imgUrl(),
+                        board.getLocation(),
+                        board.getMeetTime(),
+                        board.getCreatedAt(),
+                        board.getPeople_current(),
+                        board.getPeople_max()
+                )
+        ).collect(Collectors.toList());
+        return ResponseEntity.ok().body(attendedBoardList);
+    }
+
 }

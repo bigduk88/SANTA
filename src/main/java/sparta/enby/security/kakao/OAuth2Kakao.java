@@ -60,6 +60,9 @@ public class OAuth2Kakao {
         if (URL.contains("http://enby.s3-website.ap-northeast-2.amazonaws.com")) {
             params.add("redirect_uri", "http://enby.s3-website.ap-northeast-2.amazonaws.com/oauth");
         }
+        if (URL.contains("http://www.santa-mountain.com/")){
+            params.add("redirect_uri", "http://www.santa-mountain.com/oauth");
+        }
         //인가 코드
         params.add("code", code);
 

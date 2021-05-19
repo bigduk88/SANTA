@@ -6,15 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import sparta.enby.dto.BoardRequestDto;
-import sparta.enby.dto.BoardResponseDto;
-import sparta.enby.dto.ChangeDeadlineRequestDto;
-import sparta.enby.dto.RegisterRequestDto;
+import sparta.enby.dto.*;
 import sparta.enby.security.UserDetailsImpl;
 import sparta.enby.service.BoardService;
 import sparta.enby.service.RegistrationService;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -87,4 +85,10 @@ public class BoardController {
     public ResponseEntity<String> clickFinish(@PathVariable Long board_id, @RequestBody ChangeDeadlineRequestDto changeDeadlineRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return boardService.clickFinish(board_id, changeDeadlineRequestDto, userDetails.getAccount());
     }
+
+    @PostMapping("/board/mating/noreviews")
+    public ResponseEntity<List<AttendedBoardDto>> getBoardWithoutReview(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return boardService.getBoardWithoutReview(userDetails);
+    }
+
 }

@@ -15,7 +15,9 @@ import sparta.enby.repository.ReviewRepository;
 import sparta.enby.security.UserDetailsImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,6 +51,7 @@ public class ProfileService {
                             board.getBoard_imgUrl(),
                             board.getLocation(),
                             board.getMeetTime(),
+                            board.getCreatedAt(),
                             board.getPeople_current(),
                             board.getPeople_max(),
                             board.getAccount().getNickname(),
@@ -56,9 +59,11 @@ public class ProfileService {
                     )
             ).collect(Collectors.toList()));
         }
-        // 참가 허락된 모임
+
+        // 참석한 모임
         for (Registration registration : acceptedList) {
             List<Board> attendedBoard = boardRepository.findAllByRegistrations(registration);
+            System.out.println(attendedBoard.stream());
             attendedBoardList.addAll(attendedBoard.stream().map(
                     board -> new AttendedBoardDto(
                             board.getId(),
@@ -66,11 +71,14 @@ public class ProfileService {
                             board.getBoard_imgUrl(),
                             board.getLocation(),
                             board.getMeetTime(),
+                            board.getCreatedAt(),
                             board.getPeople_current(),
                             board.getPeople_max()
                     )
             ).collect(Collectors.toList()));
         }
+
+
 
         // 내가 생성한 게시글
         List<Board> myboards = boardRepository.findAllByCreatedBy(name);
@@ -82,6 +90,8 @@ public class ProfileService {
                         board.getCreatedAt()
                 )
         ).collect(Collectors.toList());
+
+//        toList = Stream.concat(registered_Map.entrySet().stream(), attended_Map.entrySet().stream(), created_Map.entrySet().stream()).collect(Collectors.toList());
         toList = Stream.concat(registeredBoardList.stream(), attendedBoardList.stream()).collect(Collectors.toList());
         toList = Stream.concat(toList.stream(), myboardList.stream()).collect(Collectors.toList());
         return ResponseEntity.ok().body(toList);
