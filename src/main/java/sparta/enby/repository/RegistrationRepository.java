@@ -12,6 +12,5 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     List<Registration> findAllByCreatedBy(String name);
     List<Registration>findAllByAcceptedTrueAndBoardDeadlineStatusAndCreatedBy(Boolean x, String name);
     List<Registration> findAllByAcceptedTrueAndCreatedBy(String name);
-    List<Registration> findAllByBoardId(Long board_id);
     boolean existsByBoardId(Long board_id);
 }

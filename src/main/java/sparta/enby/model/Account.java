@@ -2,6 +2,7 @@ package sparta.enby.model;
 
 import lombok.*;
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,13 +27,7 @@ public class Account extends BaseTimeEntity{
     private String password;
 
     @Column(nullable = false)
-    private String email;
-
-    @Column(nullable = false)
     private String profile_img;
-
-    @Column(nullable = true)
-    private Long kakaoId;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
@@ -49,5 +44,10 @@ public class Account extends BaseTimeEntity{
     @OneToMany(mappedBy = "account")
     @Builder.Default
     List<Registration>registrations = new ArrayList<>();
+
+    public void update(String nickname, String profile_img) {
+        this.nickname = nickname;
+        this.profile_img = profile_img;
+    }
 
 }

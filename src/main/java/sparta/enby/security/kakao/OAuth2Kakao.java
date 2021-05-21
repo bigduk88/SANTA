@@ -3,7 +3,6 @@ package sparta.enby.security.kakao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +19,6 @@ import sparta.enby.model.Account;
 import sparta.enby.model.AuthorizationKakao;
 import sparta.enby.repository.AccountRepository;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.Collections;
 
@@ -102,25 +100,27 @@ public class OAuth2Kakao {
             //임의의 비밀번호를 만들어서
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
-            if (accountRepository.existsByKakaoId(root.get("id").asLong())) {
-                return accountRepository.findByKakaoId(root.get("id").asLong());
-            }
             String profile_image_url = null;
             if (kakao_account.path("profile").path("profile_image_url").asText().isEmpty() || kakao_account.path("profile").path("profile_image_url").asText() == null) {
                 profile_image_url = "https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/unset_photo.jpeg";
             } else {
                 profile_image_url = kakao_account.path("profile").path("profile_image_url").asText();
             }
+            String nickname = kakao_account.path("profile").path("nickname").asText();
+
             Account account = accountRepository.findByNickname(kakao_account.path("profile").path("nickname").asText()).orElse(null);
+
             if (account == null) {
                 Account newaccount = accountRepository.save(Account.builder()
                         .password(passwordEncoder.encode(password))
-                        .email(kakao_account.get("email").asText())
-                        .nickname(kakao_account.path("profile").path("nickname").asText())
+                        .nickname(nickname)
                         .profile_img(profile_image_url)
                         .roles(Collections.singletonList("ROLE_USER"))
                         .build());
                 return newaccount;
+            }
+            else {
+                account.update(nickname, profile_image_url);
             }
             return account;
 
