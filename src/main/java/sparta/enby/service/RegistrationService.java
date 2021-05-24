@@ -34,11 +34,18 @@ public class RegistrationService {
         if (registration != null && registration.getAccount().equals(account)) {
             return new ResponseEntity<>("중복 요청은 안됩니다.", HttpStatus.BAD_REQUEST);
         }
+        Boolean allowed;
+        if (registerRequestDto.isAccepted() == true){
+            allowed = true;
+        }
+        else{
+            allowed = false;
+        }
         Registration newRegistration = Registration.builder()
                 .contents(registerRequestDto.getContents())
                 .kakao_id(registerRequestDto.getKakao_id())
                 .account(account)
-                .accepted(false)
+                .accepted(allowed)
                 .build();
         int i = board.getPeople_current();
         if (board.getPeople_current() >= board.getPeople_max()){
@@ -48,7 +55,6 @@ public class RegistrationService {
             i = i + 1;
             board.setPeople_current(i);
             registrationRepository.save(newRegistration);
-            System.out.println("저장완료");
         }
         newRegistration.addBoardAndAccount(board, account);
         return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " + newRegistration.getId(), HttpStatus.OK);
@@ -82,7 +88,6 @@ public class RegistrationService {
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
         if (board.getCreatedBy().equals(account.getNickname())) {
             int i = board.getPeople_current();
-            System.out.println(i);
             i = i - 1;
             board.setPeople_current(i);
             registrationRepository.deleteById(register_id);

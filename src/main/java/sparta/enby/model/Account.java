@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@ToString(of = {"id","nickname", "email", "profile_img", "kakaoId"})
+@ToString(of = {"id","nickname", "password", "profile_img"})
 public class Account extends BaseTimeEntity{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)

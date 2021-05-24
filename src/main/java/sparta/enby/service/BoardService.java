@@ -34,12 +34,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
-    private final S3Service uploader;
     private final FileUploaderService fileUploaderService;
-    private final AccountRepository accountRepository;
     private final ReviewRepository reviewRepository;
     private final RegistrationRepository registrationRepository;
-    private final RegistrationService registrationService;
 
 
     public ResponseEntity<List<BoardResponseDto>> getBoardList() {
@@ -213,7 +210,9 @@ public class BoardService {
             if (boardRequestDto.getPeople_max() == 0) {
                 people_max = board.getPeople_max();
             }
-
+            else{
+                people_max = boardRequestDto.getPeople_max();
+            }
             Boolean deadlineStatus = false;
             if (boardRequestDto.getDeadlineStatus() == null) {
                 deadlineStatus = board.getDeadlineStatus();
@@ -238,29 +237,23 @@ public class BoardService {
             return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다", HttpStatus.BAD_REQUEST);
         }
         if (!board.getReviews().isEmpty()) {
-            System.out.println(board.getReviews());
             if (reviewRepository.existsByBoard(board)) {
                 List<Review> reviews = reviewRepository.findAllByBoard(board);
                 for (Review review : reviews) {
                     if (!review.getReview_imgUrl().equals("https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png")) {
                         fileUploaderService.removeImage(review.getReview_imgUrl());
-                        System.out.println("review delete start");
                     }
                     reviewRepository.deleteAllByBoard(board);
-                    System.out.println("review deleted");
                 }
             }
         }
         if (!board.getRegistrations().isEmpty()) {
             if (registrationRepository.existsByBoardId(board_id)) {
-                System.out.println("registration delete start");
                 registrationRepository.deleteAllByBoard(board);
-                System.out.println("register deleted");
             }
         }
         board.deleteBoard(board);
         boardRepository.deleteById(board_id);
-        System.out.println("board deleted");
         return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
     }
 

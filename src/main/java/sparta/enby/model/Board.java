@@ -25,6 +25,7 @@ public class Board extends BaseEntity {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String contents;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")

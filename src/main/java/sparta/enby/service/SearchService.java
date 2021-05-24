@@ -54,7 +54,7 @@ public class SearchService {
                 ).collect(Collectors.toList());
 
         Set<BoardResponseDto> toSet = Stream.concat(titleList.stream(),contentList.stream()).collect(Collectors.toSet());
-        List<BoardResponseDto> toList = new ArrayList(toSet);
+        List<BoardResponseDto> toList = new ArrayList<>(toSet);
         Map<String, Object> map = new HashMap<>();
         map.put("board",toList);
         return ResponseEntity.ok().body(map);
