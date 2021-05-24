@@ -61,9 +61,9 @@ public class BoardController {
         Long board_id = boardService.writeBoard(boardRequestDto, userDetails);
         //게시글 생성시 자동으로 주최자를 참여 시키기 위한 부분
         RegisterRequestDto registerRequestDto = new RegisterRequestDto();
-        registerRequestDto.setContents("a");
+        registerRequestDto.setContents("주최자 입니다");
         registerRequestDto.setAccepted(true);
-        registerRequestDto.setKakao_id("a");
+        registerRequestDto.setKakao_id(userDetails.getUsername());
         //주최자 참여하기
         return registrationService.makeRegistration(registerRequestDto, board_id, userDetails);
     }
