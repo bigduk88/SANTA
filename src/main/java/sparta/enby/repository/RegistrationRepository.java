@@ -9,8 +9,9 @@ import java.util.List;
 public interface RegistrationRepository extends JpaRepository<Registration, Long> {
     void deleteAllByBoard(Board board);
     Registration findAllByBoardIdAndCreatedBy(Long board_id, String name);
+    Registration findByCreatedBy(String name);
     List<Registration> findAllByCreatedBy(String name);
     List<Registration>findAllByAcceptedTrueAndBoardDeadlineStatusAndCreatedBy(Boolean x, String name);
-    List<Registration> findAllByBoardId(Long board_id);
+    List<Registration> findAllByAcceptedTrueAndCreatedBy(String name);
     boolean existsByBoardId(Long board_id);
 }

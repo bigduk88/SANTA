@@ -3,9 +3,11 @@ package sparta.enby.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import sparta.enby.dto.AccountResponseDto;
 import sparta.enby.dto.AttendedBoardDto;
 import sparta.enby.dto.MyBoardResponseDto;
 import sparta.enby.dto.RegisteredBoardDto;
+import sparta.enby.model.Account;
 import sparta.enby.model.Board;
 import sparta.enby.model.Registration;
 import sparta.enby.repository.AccountRepository;
@@ -14,8 +16,7 @@ import sparta.enby.repository.RegistrationRepository;
 import sparta.enby.repository.ReviewRepository;
 import sparta.enby.security.UserDetailsImpl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,6 +50,7 @@ public class ProfileService {
                             board.getBoard_imgUrl(),
                             board.getLocation(),
                             board.getMeetTime(),
+                            board.getCreatedAt(),
                             board.getPeople_current(),
                             board.getPeople_max(),
                             board.getAccount().getNickname(),
@@ -56,7 +58,8 @@ public class ProfileService {
                     )
             ).collect(Collectors.toList()));
         }
-        // 참가 허락된 모임
+
+        // 참석한 모임
         for (Registration registration : acceptedList) {
             List<Board> attendedBoard = boardRepository.findAllByRegistrations(registration);
             attendedBoardList.addAll(attendedBoard.stream().map(
@@ -66,11 +69,12 @@ public class ProfileService {
                             board.getBoard_imgUrl(),
                             board.getLocation(),
                             board.getMeetTime(),
+                            board.getCreatedAt(),
                             board.getPeople_current(),
                             board.getPeople_max()
                     )
             ).collect(Collectors.toList()));
-        }
+        };
 
         // 내가 생성한 게시글
         List<Board> myboards = boardRepository.findAllByCreatedBy(name);
@@ -79,10 +83,23 @@ public class ProfileService {
                         board.getId(),
                         board.getTitle(),
                         board.getMeetTime(),
-                        board.getCreatedAt()
+                        board.getCreatedAt(),
+                        board.getAccount().getNickname(),
+                        board.getAccount().getProfile_img()
                 )
         ).collect(Collectors.toList());
-        toList = Stream.concat(registeredBoardList.stream(), attendedBoardList.stream()).collect(Collectors.toList());
+
+        List<AccountResponseDto> myaccount = new ArrayList<>();
+        List<Account> accounts = accountRepository.findAllByNickname(name);
+        myaccount = accounts.stream().map(
+                account -> new AccountResponseDto(
+                        account.getNickname(),
+                        account.getProfile_img()
+                )
+        ).collect(Collectors.toList());
+
+        toList = Stream.concat(myaccount.stream(), registeredBoardList.stream()).collect(Collectors.toList());
+        toList = Stream.concat(toList.stream(), attendedBoardList.stream()).collect(Collectors.toList());
         toList = Stream.concat(toList.stream(), myboardList.stream()).collect(Collectors.toList());
         return ResponseEntity.ok().body(toList);
     }

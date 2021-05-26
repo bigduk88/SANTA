@@ -31,13 +31,9 @@ public class OAuth2Kakao {
     private final ObjectMapper objectMapper;
     private final AccountRepository accountRepository;
 
-    //카카오 RESTAPI Key
-    private final String KakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
-    //카카오 RedirectURL
-    private final String frontendRedirectUrl = "http://localhost:3000";
-//    private final String frontendRedirectUrl = "http://localhost:8080";
+
     // Kakao Authorization code
-    public AuthorizationKakao callTokenApi(String code) {
+    public AuthorizationKakao callTokenApi(String code, String URL) {
         String grantType = "authorization_code";
 
         HttpHeaders headers = new HttpHeaders();
@@ -50,12 +46,21 @@ public class OAuth2Kakao {
         //사용자 정보를 가져올때 필요한 access_token을 요청
         params.add("grant_type", grantType);
         //RestApiKey
-        params.add("client_id", KakaoOauth2ClientId);
-        //RedirectUri 생성
-        //Frontend
-        params.add("redirect_uri", frontendRedirectUrl + "/oauth");
-//        Backend
-//        params.add("redirect_uri", frontendRedirectUrl + "/callback/kakao");
+        //카카오 RESTAPI Key
+        String kakaoOauth2ClientId = "17fb08cb376f564b3375667a799fda1f";
+        params.add("client_id", kakaoOauth2ClientId);
+        if (URL.contains("http://localhost:8080")) {
+            params.add("redirect_uri", "http://localhost:8080/callback/kakao");
+        }
+        if (URL.contains("http://localhost:3000")) {
+            params.add("redirect_uri", "http://localhost:3000/oauth");
+        }
+        if (URL.contains("http://enby.s3-website.ap-northeast-2.amazonaws.com")) {
+            params.add("redirect_uri", "http://enby.s3-website.ap-northeast-2.amazonaws.com/oauth");
+        }
+        if (URL.contains("http://www.santa-mountain.com/")){
+            params.add("redirect_uri", "http://www.santa-mountain.com/oauth");
+        }
         //인가 코드
         params.add("code", code);
 
@@ -95,25 +100,27 @@ public class OAuth2Kakao {
             //임의의 비밀번호를 만들어서
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             String password = "AAABnv/xRVklrnYxKZ0aHgTBcXukeZygoC";
-            if (accountRepository.existsByKakaoId(root.get("id").asLong())) {
-                return accountRepository.findByKakaoId(root.get("id").asLong());
-            }
             String profile_image_url = null;
             if (kakao_account.path("profile").path("profile_image_url").asText().isEmpty() || kakao_account.path("profile").path("profile_image_url").asText() == null) {
                 profile_image_url = "https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/unset_photo.jpeg";
             } else {
                 profile_image_url = kakao_account.path("profile").path("profile_image_url").asText();
             }
+            String nickname = kakao_account.path("profile").path("nickname").asText();
+
             Account account = accountRepository.findByNickname(kakao_account.path("profile").path("nickname").asText()).orElse(null);
+
             if (account == null) {
                 Account newaccount = accountRepository.save(Account.builder()
                         .password(passwordEncoder.encode(password))
-                        .email(kakao_account.get("email").asText())
-                        .nickname(kakao_account.path("profile").path("nickname").asText())
+                        .nickname(nickname)
                         .profile_img(profile_image_url)
                         .roles(Collections.singletonList("ROLE_USER"))
                         .build());
                 return newaccount;
+            }
+            else {
+                account.update(nickname, profile_image_url);
             }
             return account;
 

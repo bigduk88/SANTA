@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import sparta.enby.service.UserService;
 
+import javax.servlet.http.HttpServletRequest;
+
 
 @RequiredArgsConstructor
 @Controller
@@ -15,10 +17,10 @@ public class UserController {
 
     //카카오 로그인 + 사용자 정보 호출 + JWT token 제공
     @RequestMapping("/callback/kakao")
-    public ResponseEntity oauth2AuthroziationKakao(@RequestParam("code") String code){
+    public ResponseEntity <String> oauth2AuthroziationKakao(@RequestParam("code") String code, HttpServletRequest request){
         if (code == null || code.isEmpty()){
             return ResponseEntity.badRequest().body("인가코드가 없습니다.");
         }
-        return ResponseEntity.ok().body(userService.oauth2AuthorizationKakao(code));
+        return ResponseEntity.ok().body(userService.oauth2AuthorizationKakao(code, request));
     }
 }

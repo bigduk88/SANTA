@@ -35,7 +35,7 @@ public class ReviewService {
     private final AccountRepository accountRepository;
 
     //게시글 가져가기
-    public ResponseEntity getReviewList() {
+    public ResponseEntity<List<ReviewResponseDto>> getReviewList() {
         List<Review> reviews = reviewRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<ReviewResponseDto> toList = reviews.stream().map(
                 review -> new ReviewResponseDto(
@@ -58,7 +58,7 @@ public class ReviewService {
         if (reviewPage.isEmpty()) {
             return null;
         }
-        Page<ReviewResponseDto> toMap = reviewPage.map(review -> new ReviewResponseDto(
+        return reviewPage.map(review -> new ReviewResponseDto(
                 review.getId(),
                 review.getTitle(),
                 review.getReview_imgUrl(),
@@ -68,13 +68,12 @@ public class ReviewService {
                 review.getAccount().getNickname(),
                 review.getAccount().getProfile_img()
         ));
-        return toMap;
 
     }
 
-    public List<ReviewResponseDto> getDetailReview(Long review_id, UserDetailsImpl userDetails){
+    public List<ReviewResponseDto> getDetailReview(Long review_id, UserDetailsImpl userDetails) {
         List<Review> reviews = reviewRepository.findAllById(review_id);
-        List<ReviewResponseDto>toList = reviews.stream().map(
+        return reviews.stream().map(
                 review -> new ReviewResponseDto(
                         review.getId(),
                         review.getTitle(),
@@ -86,10 +85,7 @@ public class ReviewService {
                         review.getAccount().getProfile_img()
                 )
         ).collect(Collectors.toList());
-        return toList;
     }
-
-
 
 
     //게시글 작성
@@ -98,9 +94,11 @@ public class ReviewService {
         String review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
         Board board = boardRepository.findById(board_id).orElse(null);
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
-
         if (board == null) {
             return new ResponseEntity<>("없는 게시글입니다", HttpStatus.BAD_REQUEST);
+        }
+        if (!board.getDeadlineStatus()) {
+            return new ResponseEntity<>("아직 모임이 모집중입니다.", HttpStatus.BAD_REQUEST);
         }
         Review review = Review.builder()
                 .title(reviewRequestDto.getTitle())
@@ -108,13 +106,14 @@ public class ReviewService {
                 .review_imgUrl(review_imgUrl)
                 .account(account)
                 .build();
+        assert account != null;
         Review newReview = reviewRepository.save(review);
         newReview.addBoardAndAccount(board, account);
         return new ResponseEntity<>("성공적으로 리뷰를 등록하였습니다", HttpStatus.OK);
     }
 
     @Transactional
-    public ResponseEntity editReview(ReviewRequestDto reviewRequestDto, Long board_id, Long review_id, UserDetailsImpl userDetails) {
+    public ResponseEntity<String> editReview(ReviewRequestDto reviewRequestDto, Long board_id, Long review_id, UserDetailsImpl userDetails) {
         Board board = boardRepository.findById(board_id).orElse(null);
         if (board == null) {
             return ResponseEntity.badRequest().body("없는 게시글입니다");
@@ -127,22 +126,26 @@ public class ReviewService {
         if (review.getAccount() != account) {
             return ResponseEntity.badRequest().body("다른 사용자 후기를 수정하실 수 없습니다");
         }
-        String review_imgUrl = null;
-        String contents = null;
-        if (reviewRequestDto.getReviewImg() == null && reviewRequestDto.getContents() == null) {
-            return ResponseEntity.badRequest().body("수정하실 내용또는 사진을 올려주세요");
+        String title;
+        if (reviewRequestDto.getTitle() == null || reviewRequestDto.getTitle().isEmpty()) {
+            title = review.getTitle();
+        } else {
+            title = reviewRequestDto.getTitle();
         }
+        String contents;
         if (reviewRequestDto.getContents() == null || reviewRequestDto.getContents().isEmpty()) {
             contents = review.getContents();
-            if (reviewRequestDto.getReviewImg() == null || reviewRequestDto.getReviewImg().isEmpty()) {
-                review_imgUrl = review.getReview_imgUrl();
-            } else {
-                fileUploaderService.removeImage(review.getReview_imgUrl());
-                review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
-                review.editReview(contents, review_imgUrl);
-            }
+        } else {
+            contents = reviewRequestDto.getContents();
         }
-
+        String review_imgUrl;
+        if (reviewRequestDto.getReviewImg() == null || reviewRequestDto.getReviewImg().isEmpty()) {
+            review_imgUrl = review.getReview_imgUrl();
+        } else {
+            fileUploaderService.removeImage(review.getReview_imgUrl());
+            review_imgUrl = fileUploaderService.uploadImage(reviewRequestDto.getReviewImg());
+        }
+        review.editReview(title, contents, review_imgUrl);
         return ResponseEntity.ok().body("수정 완료하였습니다");
     }
 
@@ -158,6 +161,7 @@ public class ReviewService {
         if (review == null) {
             return ResponseEntity.badRequest().body("없는 리뷰입니다");
         }
+        assert account != null;
         if (!review.getAccount().getNickname().equals(account.getNickname())) {
             return ResponseEntity.badRequest().body("다른 사용자의 리뷰를 지울 수 없습니다.");
         }

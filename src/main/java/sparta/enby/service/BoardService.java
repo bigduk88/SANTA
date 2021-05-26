@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import sparta.enby.dto.*;
 import sparta.enby.model.Account;
 import sparta.enby.model.Board;
+import sparta.enby.model.Registration;
 import sparta.enby.model.Review;
 import sparta.enby.repository.AccountRepository;
 import sparta.enby.repository.BoardRepository;
@@ -23,6 +24,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +34,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
-    private final S3Service uploader;
     private final FileUploaderService fileUploaderService;
-    private final AccountRepository accountRepository;
     private final ReviewRepository reviewRepository;
     private final RegistrationRepository registrationRepository;
-    private final RegistrationService registrationService;
 
 
     public ResponseEntity<List<BoardResponseDto>> getBoardList() {
@@ -58,21 +57,6 @@ public class BoardService {
                 )
         ).collect(Collectors.toList());
         return ResponseEntity.ok().body(toList);
-    }
-
-    @Transactional
-    public void updateDeadlineStatus(BoardResponseDto boardResponseDto){
-        Board board = boardRepository.findById(boardResponseDto.getId()).orElse(null);
-        if (board == null){
-            board.update(boardResponseDto.getBoard_imgUrl(),
-                    boardResponseDto.getTitle(),
-                    boardResponseDto.getContents(),
-                    boardResponseDto.getMeetTime(),
-                    boardResponseDto.getLocation(),
-                    boardResponseDto.getPeople_max(),
-                    boardResponseDto.getDeadlineStatus());
-            boardRepository.save(board);
-        }
     }
 
     //게시글 상세 페이지
@@ -99,7 +83,9 @@ public class BoardService {
                                         review.getTitle(),
                                         review.getReview_imgUrl(),
                                         review.getContents(),
-                                        review.getBoard().getId()
+                                        review.getBoard().getId(),
+                                        review.getAccount().getNickname(),
+                                        review.getAccount().getProfile_img()
                                 )
                         ).collect(Collectors.toList()),
                         // 게시글에 참여 신청한 내역을 RegistrationResponseDto에 매핑
@@ -164,8 +150,7 @@ public class BoardService {
                 .deadlineStatus(false).build();
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
-        return newBoard.getId();
-
+        return  newBoard.getId();
     }
 
     //게시글 수정
@@ -179,7 +164,9 @@ public class BoardService {
             if (boardRequestDto.getBoardImg() == null || boardRequestDto.getBoardImg().isEmpty()) {
                 board_imgUrl = board.getBoard_imgUrl();
             } else {
-                fileUploaderService.removeImage(board.getBoard_imgUrl());
+                if (!board.getBoard_imgUrl().equals("https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png")) {
+                    fileUploaderService.removeImage(board.getBoard_imgUrl());
+                }
                 board_imgUrl = fileUploaderService.uploadImage(boardRequestDto.getBoardImg());
             }
 
@@ -211,15 +198,26 @@ public class BoardService {
                 location = boardRequestDto.getLocation();
             }
             int people_max = 0;
+
             if (boardRequestDto.getPeople_max() > 5) {
-                return ResponseEntity.badRequest().body("최대인원은 4인이하 입니다");
+                people_max = 4;
+            }
+            if (boardRequestDto.getPeople_max() < 0) {
+                people_max = 0;
             }
             if (boardRequestDto.getPeople_max() == 0) {
                 people_max = board.getPeople_max();
             }
-            people_max = boardRequestDto.getPeople_max();
+            else{
+                people_max = boardRequestDto.getPeople_max();
+            }
+            Boolean deadlineStatus = false;
+            if (boardRequestDto.getDeadlineStatus() == null) {
+                deadlineStatus = board.getDeadlineStatus();
+            } else {
+                deadlineStatus = boardRequestDto.getDeadlineStatus();
+            }
 
-            Boolean deadlineStatus = boardRequestDto.getDeadlineStatus();
             board.update(board_imgUrl, title, contents, time, location, people_max, deadlineStatus);
 
             return new ResponseEntity<>("성공적으로 수정하였습니다", HttpStatus.OK);
@@ -237,38 +235,67 @@ public class BoardService {
             return new ResponseEntity<>("없는 사용자이거나 다른 사용자의 게시글입니다", HttpStatus.BAD_REQUEST);
         }
         if (!board.getReviews().isEmpty()) {
-            System.out.println(board.getReviews());
             if (reviewRepository.existsByBoard(board)) {
                 List<Review> reviews = reviewRepository.findAllByBoard(board);
                 for (Review review : reviews) {
-                    fileUploaderService.removeImage(review.getReview_imgUrl());
-                    System.out.println("review delete start");
+                    if (!review.getReview_imgUrl().equals("https://hanghae99-gitlog.s3.ap-northeast-2.amazonaws.com/default_image.png")) {
+                        fileUploaderService.removeImage(review.getReview_imgUrl());
+                    }
                     reviewRepository.deleteAllByBoard(board);
-                    System.out.println("review deleted");
                 }
             }
         }
         if (!board.getRegistrations().isEmpty()) {
             if (registrationRepository.existsByBoardId(board_id)) {
-                System.out.println("registration delete start");
                 registrationRepository.deleteAllByBoard(board);
-                System.out.println("register deleted");
             }
         }
         board.deleteBoard(board);
         boardRepository.deleteById(board_id);
-        System.out.println("board deleted");
         return new ResponseEntity<>("성공적으로 삭제 하였습니다", HttpStatus.OK);
     }
 
     @Transactional
-    public ResponseEntity <String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account){
+    public ResponseEntity<String> clickFinish(Long board_id, ChangeDeadlineRequestDto changeDeadlineRequestDto, Account account) {
         Board board = boardRepository.findById(board_id).orElse(null);
-        if (board == null){
+        if (board == null) {
             return ResponseEntity.badRequest().body("해당 아이디의 게시글이 없습니다");
         }
         Boolean b = changeDeadlineRequestDto.getDeadlineStatus();
         board.changeDeadlineStatus(b);
         return ResponseEntity.ok().body("성공적으로 마감상태가 변경되었습니다");
     }
+
+    public ResponseEntity<List<AttendedBoardDto>> getBoardWithoutReview(UserDetailsImpl userDetails) {
+        List<Board> boardLists = new ArrayList<>();
+        List<Board> boardwithnoreview = new ArrayList<>();
+        List<AttendedBoardDto> attendedBoardList = new ArrayList<>();
+        List<Review> reviewLists = new ArrayList<>();
+        List<Registration> registrations = registrationRepository.findAllByAcceptedTrueAndCreatedBy(userDetails.getUsername());
+
+        for (Registration registration : registrations) {
+            boardLists.addAll(boardRepository.findAllByRegistrations(registration));
+        }
+        for (Board board : boardLists){
+            reviewLists = reviewRepository.findAllByBoardAndCreatedBy(board,userDetails.getUsername());
+            if (reviewLists.isEmpty() || reviewLists == null){
+                boardwithnoreview.add(board);
+            }
+        }
+        attendedBoardList=boardwithnoreview.stream().map(
+                board -> new AttendedBoardDto(
+                        board.getId(),
+                        board.getTitle(),
+                        board.getBoard_imgUrl(),
+                        board.getLocation(),
+                        board.getMeetTime(),
+                        board.getCreatedAt(),
+                        board.getPeople_current(),
+                        board.getPeople_max(),
+                        board.getDeadlineStatus()
+                )
+        ).collect(Collectors.toList());
+        return ResponseEntity.ok().body(attendedBoardList);
+    }
+
 }

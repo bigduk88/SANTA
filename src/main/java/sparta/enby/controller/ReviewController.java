@@ -20,7 +20,7 @@ public class ReviewController {
 
     //후기 리스트
     @GetMapping("/main/review")
-    public ResponseEntity getReviewList(){
+    public ResponseEntity<List<ReviewResponseDto>> getReviewList(){
         return reviewService.getReviewList();
     }
 
@@ -44,7 +44,7 @@ public class ReviewController {
 
     //후기 수정
     @PutMapping("/board/mating/{board_id}/review/{review_id}")
-    public ResponseEntity editReview(@ModelAttribute ReviewRequestDto reviewRequestDto, @PathVariable Long board_id, @PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity <String> editReview(@ModelAttribute ReviewRequestDto reviewRequestDto, @PathVariable Long board_id, @PathVariable Long review_id, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return reviewService.editReview(reviewRequestDto,board_id, review_id, userDetails);
     }
 

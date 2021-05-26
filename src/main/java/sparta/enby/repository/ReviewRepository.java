@@ -11,4 +11,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllById(Long review_id);
     List<Review> findAllByBoard(Board board);
     Boolean existsByBoard(Board board);
+    List<Review> findAllByTitleContaining(String keyword);
+    List<Review> findAllByContentsContaining(String keyword);
+    List<Review> findAllByBoardAndCreatedBy(Board board, String name);
+
 }

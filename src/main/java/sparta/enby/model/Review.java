@@ -47,7 +47,8 @@ public class Review extends BaseEntity{
         this.board = null;
         this.account = null;
     }
-    public void editReview(String contents, String review_imgUrl){
+    public void editReview(String title, String contents, String review_imgUrl){
+        this.title = title;
         this.contents = contents;
         this.review_imgUrl = review_imgUrl;
     }
