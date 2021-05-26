@@ -24,7 +24,7 @@
 
 [Notion] : <https://tinyurl.com/awa42h>
 
-## Why Santa / ?
+## Why Santa?
 
 이 곳에서 설치에 관련된 이야기를 해주시면 좋습니다.
 
