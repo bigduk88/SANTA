@@ -34,28 +34,21 @@ public class RegistrationService {
         if (registration != null && registration.getAccount().equals(account)) {
             return new ResponseEntity<>("중복 요청은 안됩니다.", HttpStatus.BAD_REQUEST);
         }
-        Boolean allowed;
-        if (registerRequestDto.isAccepted() == true){
-            allowed = true;
-        }
-        else{
-            allowed = false;
-        }
         Registration newRegistration = Registration.builder()
                 .contents(registerRequestDto.getContents())
                 .kakao_id(registerRequestDto.getKakao_id())
                 .account(account)
-                .accepted(allowed)
+                .accepted(registerRequestDto.isAccepted())
                 .build();
-        int i = board.getPeople_current();
-        if (board.getPeople_current() >= board.getPeople_max()){
+        int current_people = board.getPeople_current();
+        if (current_people >= board.getPeople_max()){
             return ResponseEntity.badRequest().body("모집 인원이 다 찼습니다.");
-        }
-        else{
-            i = i + 1;
-            board.setPeople_current(i);
+        }else {
+            current_people += 1;
+            board.setPeople_current(current_people);
             registrationRepository.save(newRegistration);
         }
+        assert account != null;
         newRegistration.addBoardAndAccount(board, account);
         return new ResponseEntity<>("신청을 성공 하였습니다. registration id: " + newRegistration.getId(), HttpStatus.OK);
     }
@@ -68,9 +61,11 @@ public class RegistrationService {
         }
         Registration registration = registrationRepository.findById(register_id).orElse(null);
         Account account = accountRepository.findByNickname(userDetails.getUsername()).orElse(null);
+        assert account != null;
         if (!account.getNickname().equals(board.getCreatedBy())) {
             return ResponseEntity.badRequest().body("주최자만 신청을 허락할 수 있습니다.");
         }
+        assert registration != null;
         registration.update(registerRequestDto);
         return ResponseEntity.ok().body("신청을 허용하였습니다");
     }

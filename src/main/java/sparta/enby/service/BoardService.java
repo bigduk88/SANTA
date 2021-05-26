@@ -150,11 +150,9 @@ public class BoardService {
                 .deadlineStatus(false).build();
         Board newBoard = boardRepository.save(board);
         newBoard.addAccount(userDetails.getAccount());
-        return newBoard.getId();
-
+        return  newBoard.getId();
     }
 
-    //Fixme:수정오류
     //게시글 수정
     @Transactional
     public ResponseEntity<String> editBoard(Long board_id, BoardRequestDto boardRequestDto, UserDetailsImpl userDetails) {
@@ -293,7 +291,8 @@ public class BoardService {
                         board.getMeetTime(),
                         board.getCreatedAt(),
                         board.getPeople_current(),
-                        board.getPeople_max()
+                        board.getPeople_max(),
+                        board.getDeadlineStatus()
                 )
         ).collect(Collectors.toList());
         return ResponseEntity.ok().body(attendedBoardList);

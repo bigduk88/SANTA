@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 @Aspect
 @RequiredArgsConstructor
-public class DeadlineAop {
+public class  DeadlineAop {
     private final BoardRepository boardRepository;
 
     @Around("execution(public * sparta.enby.controller..*(..))")
