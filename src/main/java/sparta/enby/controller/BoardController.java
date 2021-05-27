@@ -41,7 +41,8 @@ public class BoardController {
 
     //게시글 적기
     @PostMapping("/board/mating")
-    public ResponseEntity writeBoard(@ModelAttribute BoardRequestDto boardRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
+    public ResponseEntity<String> writeBoard(@ModelAttribute BoardRequestDto boardRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
+        //개시글 작성
         if (boardRequestDto.getContents() == null || boardRequestDto.getContents().isEmpty()) {
             return new ResponseEntity<>("내용을 기입해주세요", HttpStatus.BAD_REQUEST);
         }
@@ -54,10 +55,6 @@ public class BoardController {
         if (boardRequestDto.getMeetTime() == null || boardRequestDto.getMeetTime().isEmpty()) {
             return new ResponseEntity<>("모임 시간을 설정해주세요", HttpStatus.BAD_REQUEST);
         }
-        if (boardRequestDto.getPeople_max() != 4) {
-            boardRequestDto.setPeople_max(4);
-        }
-        //개시글 작성
         Long board_id = boardService.writeBoard(boardRequestDto, userDetails);
         //게시글 생성시 자동으로 주최자를 참여 시키기 위한 부분
         RegisterRequestDto registerRequestDto = new RegisterRequestDto();
