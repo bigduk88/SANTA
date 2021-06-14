@@ -1,6 +1,6 @@
 # SANTA 
 
-### SANTA SITE / 산타로 가자! ##
+### SANTA SITE / 당신의 등산친구 산타! ##
 <http://www.santa-mountain.com>
 
 https://youtu.be/jELf9Zxg8Ss
